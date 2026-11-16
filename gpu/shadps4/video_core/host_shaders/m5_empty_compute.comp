@@ -1,0 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2026
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Diagnostic only: isolate vkCmdDispatch without descriptor sets or guest work.
+#version 450
+layout(local_size_x = 1) in;
+void main() {}

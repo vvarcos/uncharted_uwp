@@ -1,0 +1,12 @@
+# Normalize line endings on checkout; keep patches and binary assets byte-exact.
+* text=auto
+*.patch -text
+*.png binary
+*.jpg binary
+*.ico binary
+*.ttf binary
+*.webp binary
+
+# Vendored third-party sources are kept in-tree without .git metadata.
+gpu/third_party/** linguist-vendored
+third_party/** linguist-vendored
