@@ -11,12 +11,12 @@ to build, run or debug it; nothing in this repository includes game code or game
 | Project | Author | What this port uses |
 | --- | --- | --- |
 | [uncharted_pc](https://github.com/Supermedo/uncharted_pc) | SuperMedo and contributors | The PC compatibility layer: guest runtime, shadPS4-derived renderer, launcher, patch tools (GPL-2.0-or-later). |
-| [bloodborne_pc](https://github.com/deadinside28/bloodborne_pc) (bbport) | deadinside28 | The original native port architecture, the `bbport_*` layer, overlay, settings and launcher framework this tree still carries (GPL-2.0). |
+| [bloodborne_pc](https://github.com/deadinside28/bloodborne_pc) (bbport) | deadinside28, plus [Supermedo's Windows fork](https://github.com/Supermedo/bloodborne_pc) | The original native port architecture, the `bbport_*` layer, overlay, settings and launcher framework this tree still carries (GPL-2.0). |
 | [**gow3_xbox**](https://github.com/Cosmo/gow3_xbox) | Cosmo | The proven Xbox UWP host: activation, packaging, guest-memory pager, Dozen integration and console scripts, adapted here (GPL-2.0). |
 | [**SpartanPort**](https://github.com/FelipePrado0/SpartanPort) | FelipePrado0 and contributors | The Xbox compatibility base that the gow3_xbox host derives from. |
 | [shadPS4](https://github.com/shadps4-emu/shadPS4) | shadPS4 team | HLE libraries (GNM driver, VideoOut, Videodec2), shader recompiler and Vulkan renderer (GPL-2.0). |
 | [shadPS4-Bloodborne-DLSS-FSR](https://github.com/IFreemz/shadPS4-Bloodborne-DLSS-FSR) | IFreemz | The DLSS bridge, Videodec2 and upscaler work adapted into `gpu/dlss_bridge` and the renderer. |
-| [**KytyPS5**](https://github.com/Cosmo/KytyPS5) | Cosmo and Kyty contributors | Reference design for the cold-page guest pager (`xbox/platform/guest_swap.inc`), adapted rather than vendored. |
+| [**KytyPS5 for Xbox**](https://github.com/Cosmo/KytyPS5) | Cosmo and Kyty contributors, on upstream [KytyPS5](https://github.com/KytyPS5/KytyPS5) | Reference design for the cold-page guest pager (`xbox/platform/guest_swap.inc`), adapted rather than vendored. |
 | [Mesa](https://gitlab.freedesktop.org/mesa/mesa) / Dozen | Mesa and Dozen contributors | The Vulkan 1.2 implementation on D3D12 used on the console, through the Dozen fork maintained for this port. |
 | [Uncharted PC port](https://github.com/bc160201983/Uncharted-The-Nathan-Drake-Collection-PC-port) | BilalReloaded | Fixes carried into the PC layer (GPL-2.0): cloth-solver barriers, guest commits on demand, look-at reset, descriptor fixes, `GOW3_COPY64_EOP_READBACK` copy path. |
 | [community builds](https://github.com/drakolordx7/uncharted_pc) | drakolordx7, Mevlock, Alex, iannitram | Fixes merged into the upstream PC port (texture handling, frame-generation leak, large compute workgroups). |
