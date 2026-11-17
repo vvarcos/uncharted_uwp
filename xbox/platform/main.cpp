@@ -283,6 +283,15 @@ static void loader() {
         std::getline(run, dump);
         if (!mode.empty() && mode.back() == '\r') mode.pop_back();
         if (!dump.empty() && dump.back() == '\r') dump.pop_back();
+        // Extra "KEY=VALUE" lines set environment variables for this run, so console tests can
+        // force hooks such as BB_PAD_PROMPTS_FORCE=2 without rebuilding or a debugger.
+        std::string extra;
+        while (std::getline(run, extra)) {
+            if (!extra.empty() && extra.back() == '\r') extra.pop_back();
+            const size_t equals = extra.find('=');
+            if (equals != std::string::npos && equals > 0)
+                _putenv_s(extra.substr(0, equals).c_str(), extra.substr(equals + 1).c_str());
+        }
     }
     if (dump.empty()) dump = find_dump();
     // B1 closing test: the same boot, then walk the allocator up to the first refusal with the
@@ -854,6 +863,16 @@ struct View : winrt::implements<View, winrt::Windows::ApplicationModel::Core::IF
         uncharted_uwp_set_core_window(
             reinterpret_cast<IUnknown*>(winrt::get_abi(core_window.get())));
         window.Closed([](auto const&, auto const&) { window_closed = true; });
+        // On Xbox, B is the system Back gesture: an app that does not claim it is navigated out and
+        // the game disappears to the dashboard. The game reads its own pad state, so the port only
+        // has to keep the shell from acting on it.
+        try {
+            auto navigation = winrt::Windows::UI::Core::SystemNavigationManager::GetForCurrentView();
+            navigation.BackRequested([](auto const&, auto const& args) { args.Handled(true); });
+            std::puts("M2: system Back request claimed (B no longer leaves the game)");
+        } catch (...) {
+            std::puts("M2: system Back request could not be claimed");
+        }
     }
     void Load(const winrt::hstring&) {}
     void Run() {

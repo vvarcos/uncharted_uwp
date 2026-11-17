@@ -594,8 +594,33 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
         std::fflush(stdout);
         return;
     }
+#ifdef UNCHARTED_UWP
+    // Proof line for the opposite direction: the copy really executed (and which path it took),
+    // so "no hang" cannot be confused with "the copy was never reached".
+    static std::atomic<u32> executed_copies{0};
+    if (const u32 n = executed_copies.fetch_add(1, std::memory_order_relaxed) + 1; n <= 32 || n % 256 == 0) {
+        std::printf("M5 copy #%u executed: fmt %u -> %u %ux%u samples %u/%u\n", n,
+                    static_cast<u32>(src->info.pixel_format),
+                    static_cast<u32>(dst->info.pixel_format),
+                    static_cast<u32>(src->info.size.width),
+                    static_cast<u32>(src->info.size.height),
+                    static_cast<u32>(src->info.num_samples),
+                    static_cast<u32>(dst->info.num_samples));        std::fflush(stdout);
+    }
+#endif
     if (src->info.num_samples == 1 && dst->info.num_samples == 1) {
-        if (instance.IsMaintenance8Supported() ||
+#ifdef UNCHARTED_UWP
+        // Diagnosis: route the same-format copies through the staging path too, so the transfer code
+        // (copyImageToBuffer + barrier + copyBufferToImage) can be exercised by the copies that the
+        // menu route actually reaches, without waiting for a depth<->color crossing.
+        static const bool force_staging = [] {
+            const char* env = std::getenv("BB_COPY_FORCE_STAGING");
+            return env != nullptr && env[0] != '0';
+        }();
+#else
+        constexpr bool force_staging = false;
+#endif
+        if (force_staging || instance.IsMaintenance8Supported() ||
             src->info.props.is_depth == dst->info.props.is_depth) {
             CopyImage(src, dst);
         } else {
@@ -607,9 +632,18 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
             copy.imageExtent = {src->info.size.width, src->info.size.height, src->info.size.depth};
             copy.imageSubresource.layerCount =
                 std::min(src->info.resources.layers, dst->info.resources.layers);
-            const u64 copy_size = std::max(BufferImageCopySize(copy, src->info.pixel_format),
-                                           BufferImageCopySize(copy, dst->info.pixel_format));
-            const auto copy_ref = staging_pool.Request(copy_size, VideoCore::MemoryType::DeviceLocal);
+            // Dozen sits on D3D12, which requires a 512-byte aligned buffer offset for
+            // buffer<->image copies. The staging ring hands out offsets aligned to nothing in
+            // particular (the Vulkan rule is only the texel block size), so ask for 512 here and
+            // round the size to match; a misaligned offset is a strong candidate for the
+            // DEVICE_HUNG this path produces at level load.
+            constexpr u64 CopyAlignment = 512;
+            const u64 copy_size =
+                Common::AlignUp(std::max(BufferImageCopySize(copy, src->info.pixel_format),
+                                         BufferImageCopySize(copy, dst->info.pixel_format)),
+                                CopyAlignment);
+            const auto copy_ref = staging_pool.Request(copy_size, VideoCore::MemoryType::DeviceLocal,
+                                                       CopyAlignment);
             static std::atomic<u32> scratch_calls{0};
             const u32 n = scratch_calls.fetch_add(1, std::memory_order_relaxed) + 1;
             if (n <= 8 || n % 256 == 0) {
