@@ -12,8 +12,9 @@ part of this repository.
 - CMake 3.20+, Ninja, Git, Python 3.10+.
 - MSYS2 (CLANG64 environment), installed at `C:\msys64` unless `-Msys2` is passed to the scripts.
 - PowerShell 7.2+.
-- The Mesa/Dozen fork used by this port (a separate checkout; set `mesa_root` in
-  `xbox/.local/settings.json`).
+- The Mesa/Dozen source submodule at `third_party/mesa` (initialize it with
+  `git submodule update --init --depth 1 third_party/mesa`), plus compatible prebuilt UWP Dozen
+  and DXIL DLLs. See [source pin and provenance limitations](docs/DOZEN.md).
 
 ## 2. Configuration
 
@@ -52,15 +53,22 @@ shipped app.
 
 ## 4. Dozen (the Vulkan driver)
 
-The console has no Vulkan driver. This port targets a Mesa **Dozen** fork that exposes Vulkan 1.2
-on D3D12 at feature level 11_0 and shader model 6.4. Point `mesa_root` at that checkout, then:
+The console has no native Vulkan driver. This port uses Mesa **Dozen** over D3D12. The fork's
+sources are included as the pinned `third_party/mesa` submodule, including its own license notices.
+See [DOZEN](docs/DOZEN.md) for the fork URL, source commit and the tested DLL's checksum.
+
+Compile Mesa separately with a compatible UWP toolchain, or supply a compatible prebuilt driver.
+The exact source revision/toolchain of the previously tested DLL and a verified driver-build recipe
+are not yet established; the source pin alone must not be presented as a reproducible binary build.
+Set `dozen_dll` and `dxil_dll` in ignored `xbox/.local/settings.json`, then run:
 
 ```powershell
 ./xbox/scripts/build.ps1 -Graphics
 ```
 
-The build produces the driver DLL (`vulkan_dzn.dll`) plus `dxil.dll` next to the app layout. The
-driver is not included in this repository and is not covered by its license.
+This command builds the UWP app with the supplied binaries; it does **not** compile Mesa. The
+Mesa sources retain their upstream licenses, independently of this port's license. Driver and
+DXIL binaries are not committed by this source-dependency update.
 
 Dozen's limits are real constraints, not preferences:
 

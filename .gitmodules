@@ -1,0 +1,4 @@
+[submodule "third_party/mesa"]
+	path = third_party/mesa
+	url = https://github.com/Cosmo/mesa_ai_slop_version.git
+	branch = dozen-update

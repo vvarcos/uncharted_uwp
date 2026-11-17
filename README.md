@@ -69,7 +69,10 @@ assets**. You need your own decrypted dump of the collection.
   `big2-ps4_Shipping.elf`, `big3-ps4_Shipping.elf`, `sce_sys`, `u1data`, `u2data`, `u3data`).
 - A Windows 10/11 build machine with Visual Studio 2022 C++ tools (clang-cl), a Windows SDK,
   CMake 3.20+, Ninja, Python 3 and MSYS2.
-- A copy of the Mesa/Dozen fork used by this port; it is not vendored here.
+- Mesa/Dozen sources are included at `third_party/mesa` as a pinned Git submodule. Clone with
+  `--recurse-submodules` or run `git submodule update --init --depth 1 third_party/mesa`.
+  See [Dozen sources and binary provenance](docs/DOZEN.md); a compatible UWP driver build is still
+  required, and the source revision of the DLL used in earlier tests has not been verified.
 
 ## Quick start
 
@@ -77,7 +80,7 @@ assets**. You need your own decrypted dump of the collection.
 # 1. Fetch and build the pinned dependencies (writes only to .local/).
 ./xbox/scripts/setup.ps1 -PcDump D:\dumps\uncharted -XboxDump E:\dumps\uncharted
 
-# 2. Build the UWP app and Dozen.
+# 2. Build the UWP app using the prebuilt Dozen/DXIL paths in settings.json.
 ./xbox/scripts/build.ps1 -HeadlessDevice
 
 # 3. Package and deploy to the console through Device Portal.
