@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <span>
+#ifdef UNCHARTED_UWP
+#include <atomic>
+#include <cstdio>
+#endif
 
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
@@ -81,6 +85,77 @@ void Pipeline::BindResources(DescriptorWrites& set_writes,
     for (auto& set_write : set_writes) {
         set_write.dstSet = desc_set;
     }
+#ifdef UNCHARTED_UWP
+    // The Continue crash enters Dozen from vkUpdateDescriptorSets. Without robustness2, null
+    // buffer/image descriptors are not supported. Diagnose them here without silently dropping a
+    // dispatch or substituting data; a valid-looking but destroyed handle needs lifetime tracing.
+    // Keep separate budgets: menu draws must not exhaust the diagnostics before the first
+    // compute dispatch reached by Continue.
+    static std::atomic<u32> descriptor_warnings[2]{};
+    for (const auto& write : set_writes) {
+        for (u32 i = 0; i < write.descriptorCount; ++i) {
+            const char* problem = nullptr;
+            switch (write.descriptorType) {
+            case vk::DescriptorType::eStorageBuffer:
+            case vk::DescriptorType::eUniformBuffer:
+            case vk::DescriptorType::eStorageBufferDynamic:
+            case vk::DescriptorType::eUniformBufferDynamic:
+                if (!write.pBufferInfo) {
+                    problem = "missing-buffer-info";
+                } else if (!write.pBufferInfo[i].buffer) {
+                    problem = "null-buffer";
+                } else if (write.pBufferInfo[i].range == 0) {
+                    problem = "zero-buffer-range";
+                }
+                break;
+            case vk::DescriptorType::eSampledImage:
+            case vk::DescriptorType::eStorageImage:
+            case vk::DescriptorType::eInputAttachment:
+            case vk::DescriptorType::eCombinedImageSampler:
+                if (!write.pImageInfo) {
+                    problem = "missing-image-info";
+                } else if (!write.pImageInfo[i].imageView) {
+                    problem = "null-image-view";
+                } else if (write.descriptorType == vk::DescriptorType::eCombinedImageSampler &&
+                           !write.pImageInfo[i].sampler) {
+                    problem = "null-combined-sampler";
+                }
+                break;
+            case vk::DescriptorType::eSampler:
+                if (!write.pImageInfo || !write.pImageInfo[i].sampler) {
+                    problem = "null-sampler";
+                }
+                break;
+            case vk::DescriptorType::eUniformTexelBuffer:
+            case vk::DescriptorType::eStorageTexelBuffer:
+                if (!write.pTexelBufferView || !write.pTexelBufferView[i]) {
+                    problem = "null-buffer-view";
+                }
+                break;
+            default:
+                break;
+            }
+            if (problem && descriptor_warnings[IsCompute() ? 1 : 0].fetch_add(
+                               1, std::memory_order_relaxed) < 64) {
+                const bool buffer_type = write.descriptorType == vk::DescriptorType::eStorageBuffer ||
+                                         write.descriptorType == vk::DescriptorType::eUniformBuffer ||
+                                         write.descriptorType == vk::DescriptorType::eStorageBufferDynamic ||
+                                         write.descriptorType == vk::DescriptorType::eUniformBufferDynamic;
+                const auto* info = buffer_type && write.pBufferInfo ? &write.pBufferInfo[i] : nullptr;
+                char line[256];
+                std::snprintf(line, sizeof(line),
+                              "M5 descriptor invalid: compute=%u binding=%u element=%u type=%u "
+                              "count=%u issue=%s offset=%llu range=%llu\n",
+                              unsigned(IsCompute()), write.dstBinding, write.dstArrayElement + i,
+                              unsigned(write.descriptorType), write.descriptorCount, problem,
+                              static_cast<unsigned long long>(info ? info->offset : 0),
+                              static_cast<unsigned long long>(info ? info->range : 0));
+                std::fputs(line, stdout);
+                std::fflush(stdout);
+            }
+        }
+    }
+#endif
     instance.GetDevice().updateDescriptorSets(set_writes, {});
     scheduler.Record([bind_point, layout, desc_set](vk::CommandBuffer cmdbuf) {
         cmdbuf.bindDescriptorSets(bind_point, layout, 0, desc_set, {});

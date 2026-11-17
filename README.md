@@ -8,15 +8,16 @@ implements Vulkan 1.2 on top of D3D12 (feature level 11_0, shader model 6.4).
 This repository is a snapshot of the work in progress. It contains **no game code and no game
 assets**. You need your own decrypted dump of the collection.
 
-> **Status: M5 partial — Continue currently crashes on console.**
+> **Status: M5 partial — experimental Continue lifetime correction, rendering still broken.**
 > Earlier claims that the 600-second gameplay gate was met were premature: the long runs proved
 > presentation, not independently verified continuous gameplay. The visual RAM/FPS HUD works,
 > but loading/Continue and rendering correctness remain unresolved. Copy skipping is still a
 > diagnostic workaround, not a fix. Do not treat this port as playable end to end.
 >
-> A diagnostic console run identified buffers destroyed during resource binding, immediately
-> before an access violation in the descriptor-update path. A lifetime correction is under review;
-> neither the crash nor the loading coin's triangular cutout has been fixed yet.
+> Diagnostics identified buffers destroyed while their draw/dispatch packet was still being built.
+> An opt-in lifetime correction reached actual gameplay in a short console test with copy skipping,
+> but the image and performance remain badly degraded; enabling real copies still stalls the GPU.
+> See [Continue lifetime experiment](docs/CONTINUE_LIFETIME.md). The loading-coin cutout is unresolved.
 
 > **AI-generated work.** Every change in this repository — code, scripts, documentation, audits and
 > Git history — was produced by AI agents under human direction. Read

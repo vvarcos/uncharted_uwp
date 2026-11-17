@@ -1631,6 +1631,9 @@ static bool SkipShader(u64 hash) {
 
 void Rasterizer::DrawRecord(const GraphicsPipeline* pipeline, const PreparedDraw* used_prepared,
                             bool is_indexed, u32 index_offset) {
+#ifdef UNCHARTED_UWP
+    buffer_cache.RetirePreviousPacketArenas();
+#endif
     if (DrawPipe::OnStageB()) {
         FrameCapture::Poll();
         scheduler.PopPendingOperations();
@@ -2125,6 +2128,9 @@ void Rasterizer::DrawIndirect(bool is_indexed, VAddr arg_address, u32 offset, u3
 
 void Rasterizer::DrawIndirectRecord(const GraphicsPipeline* pipeline, bool is_indexed,
                                     const IndirectDraw& indirect) {
+#ifdef UNCHARTED_UWP
+    buffer_cache.RetirePreviousPacketArenas();
+#endif
     if (DrawPipe::OnStageB()) {
         FrameCapture::Poll();
         scheduler.PopPendingOperations();
@@ -2408,6 +2414,9 @@ void Rasterizer::DispatchDirect() {
 }
 
 void Rasterizer::DispatchRecord(const ComputePipeline* pipeline) {
+#ifdef UNCHARTED_UWP
+    buffer_cache.RetirePreviousPacketArenas();
+#endif
     FrameCapture::Poll();
     gbuffer_draw = false;
 
@@ -2722,6 +2731,9 @@ void Rasterizer::DispatchIndirect(VAddr address, u32 offset, u32 size) {
 
 void Rasterizer::DispatchIndirectRecord(const ComputePipeline* pipeline, VAddr address,
                                         u32 size) {
+#ifdef UNCHARTED_UWP
+    buffer_cache.RetirePreviousPacketArenas();
+#endif
     scheduler.PopPendingOperations();
     const u32 offset = 0;
 
@@ -3030,6 +3042,25 @@ bool Rasterizer::BindResources(const Pipeline* pipeline) {
         }
     }
 
+#ifdef UNCHARTED_UWP
+    // A later resource binding can rebuild an arena obtained earlier in this same packet.
+    // Submitted work has been drained by Finish(), but this packet's descriptor handles have
+    // not reached vkUpdateDescriptorSets yet. Detect that distinct lifetime failure here.
+    static std::atomic<u32> dead_binding_reports{0};
+    for (const auto& [buffer, offset, size, is_written] : bound_buffers) {
+        if (buffer && !buffer->Handle() &&
+            dead_binding_reports.fetch_add(1, std::memory_order_relaxed) < 32) {
+            char line[256];
+            std::snprintf(line, sizeof(line),
+                          "M5 bound buffer destroyed: guest=0x%llx offset=%llu size=%llu write=%u\n",
+                          static_cast<unsigned long long>(buffer->cpu_addr),
+                          static_cast<unsigned long long>(offset),
+                          static_cast<unsigned long long>(size), unsigned(is_written));
+            std::fputs(line, stdout);
+            std::fflush(stdout);
+        }
+    }
+#endif
     if (uses_dma) {
         buffer_cache.SynchronizeDmaBuffers();
         fault_process_pending = true;

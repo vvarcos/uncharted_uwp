@@ -1537,6 +1537,31 @@ void BufferCache::UnpublishArena(const Buffer* arena) {
     }
 }
 
+#ifdef UNCHARTED_UWP
+void BufferCache::RetirePreviousPacketArenas() {
+    if (packet_retired_arenas.empty()) {
+        return;
+    }
+    // The preceding packet has now recorded its descriptors and draw/dispatch. Finish drains
+    // those references before destroying its replaced windows. Finishing inside GetArena was
+    // too early: handles of the packet under construction had not been recorded yet.
+    scheduler.Finish();
+    u64 released = 0;
+    for (const auto* arena : packet_retired_arenas) {
+        released += arena->size_bytes;
+        const_cast<Buffer*>(arena)->buffer.Destroy();
+    }
+    static u32 reports = 0;
+    if (reports++ < 16) {
+        std::printf("M5 arena packet retire: count=%zu released=%llu KiB\n",
+                    packet_retired_arenas.size(),
+                    static_cast<unsigned long long>(released >> 10));
+        std::fflush(stdout);
+    }
+    packet_retired_arenas.clear();
+}
+#endif
+
 const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
     const u64 first_page = first_block >> blocks_per_arena_page_shift;
     const u64 last_page = last_block >> blocks_per_arena_page_shift;
@@ -1567,13 +1592,32 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
                 const char* env = std::getenv("BB_ARENA_FREE");
                 return env == nullptr || env[0] != '0';
             }();
+            static const bool packet_retire = [] {
+                const char* env = std::getenv("BB_ARENA_PACKET_RETIRE");
+                return env != nullptr && env[0] == '1';
+            }();
             UnpublishArena(first_arena);
             if (free_replaced) {
-                const_cast<Buffer*>(first_arena)->buffer.Destroy();
+                if (packet_retire) {
+                    packet_retired_arenas.push_back(first_arena);
+                } else {
+                    const_cast<Buffer*>(first_arena)->buffer.Destroy();
+                }
             }
             first_arena = nullptr;
         }
         if (!first_arena) {
+            // Alternating bindings in this packet may revisit an already replaced window.
+            // Reuse it instead of accumulating another allocation for the same address range.
+            const auto reusable = std::ranges::find_if(packet_retired_arenas, [&](const Buffer* a) {
+                return a->Handle() && covers(a, need_start, need_end);
+            });
+            if (reusable != packet_retired_arenas.end()) {
+                first_arena = *reusable;
+                packet_retired_arenas.erase(reusable);
+                address_space[first_page] = first_arena;
+                return first_arena;
+            }
             // A 512 MiB-page base turns a tiny access near the page end into a 320-512 MiB
             // contiguous allocation. Dozen places every memory type in the same heap and refuses
             // those allocations long before the 5120 MiB app ceiling. Re-anchor at the existing

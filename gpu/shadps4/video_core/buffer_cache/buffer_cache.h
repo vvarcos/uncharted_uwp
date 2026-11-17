@@ -167,6 +167,10 @@ public:
     /// bbport: the arenas' guest and GPU address ranges and the resident block ranges (GPU
     /// crash report).
     void DumpArenas() const;
+#ifdef UNCHARTED_UWP
+    // Only at a draw/dispatch packet boundary, before capturing any resource handles.
+    void RetirePreviousPacketArenas();
+#endif
 
 private:
     struct ArenaBinds {
@@ -267,6 +271,9 @@ private:
     u64 arena_page_size{u64{1} << MAX_ARENA_PAGE_BITS};
     u64 num_arena_pages{u64{1} << (ADDRESS_SPACE_BITS - MAX_ARENA_PAGE_BITS)};
     std::deque<Buffer> arenas;
+#ifdef UNCHARTED_UWP
+    std::vector<const Buffer*> packet_retired_arenas;
+#endif
     std::vector<ArenaBinds> pending_binds;
     Vulkan::Semaphore memory_semaphore;
 
