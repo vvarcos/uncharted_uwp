@@ -34,3 +34,16 @@ The observed lifetime failure no longer reproduced in the short copy-skipping te
 A later unpublished render-based copy experiment (`.1515`, ordinary descriptor sets, no full-frame scratch) also reproduced device loss. Seven copy draws were recorded; timeline batches through 18123 completed, while batch 18124 stalled. That batch included many scene draws as well as copies, so this does not isolate the fault to one copy instruction or prove a driver transfer defect. The render backend is not a validated replacement.
 
 Follow-up `.1522` completion boundaries showed all seven isolated render copies finishing (last tick 12843), with device loss in the following batch 12844. Automatic `.1558` navigation confirmed saved-game Continue and the offline notice without user input, then reproduced the same pattern: all seven copies completed through tick 57487, followed by a stall at 57488. This was not a verified gameplay frame. A separate single-compute skip (`aec539f0`) still lost the device after its seven completed copies, so that shader is not established as the sole cause. The next target is the individual draw/dispatch packets following the final completed copy; neither a copy checkpoint nor the last shader hash identifies the fault by itself.
+
+## Fault isolated to one draw (.1613)
+
+Fencing every command only after the seventh copy completed showed the earlier work finishing: two `6a6422a9` dispatches and one `f585649d`/`7d6cd44f` draw completed, then a draw with vertex shader `f585649d` and fragment shader `b4fa3a82` stalled and the device was lost. The copies were not what stalled.
+
+With that one fragment shader skipped, and the colour/depth copies still **active**:
+
+- seven copy fences per frame completed with no stall;
+- the scene rendered with correct colours for 5838 frames at roughly 35-57 FPS;
+- sampled RAM stayed near 3711-3755 MiB of the 5120 MiB ceiling;
+- the log contained no `device was lost`, no GPU stall and no new access violation.
+
+That is not a fix. Skipping a fragment shader is a diagnostic workaround, and it leaves a large black triangular region — the same triangular defect seen on the loading coin, which strongly suggests both come from this draw rather than from the copy path. The process also returned to the dashboard after about two minutes without a new access violation, and that exit is unexplained. The 600-second gameplay gate is **not** met.
