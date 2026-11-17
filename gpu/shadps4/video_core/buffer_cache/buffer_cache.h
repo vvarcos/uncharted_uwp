@@ -183,6 +183,7 @@ private:
     }
 
     const Buffer* GetArena(u64 first_block, u64 last_block);
+    void UnpublishArena(const Buffer* arena);
 
     void EnsureResident(const Buffer* arena, u64 first_block, u64 last_block);
 

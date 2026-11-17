@@ -1526,6 +1526,17 @@ bool ArenaDemandSizing() {
 }
 } // namespace
 
+void BufferCache::UnpublishArena(const Buffer* arena) {
+    if (!arena) {
+        return;
+    }
+    for (auto& mapped : address_space) {
+        if (mapped == arena) {
+            mapped = nullptr;
+        }
+    }
+}
+
 const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
     const u64 first_page = first_block >> blocks_per_arena_page_shift;
     const u64 last_page = last_block >> blocks_per_arena_page_shift;
@@ -1556,14 +1567,18 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
                 const char* env = std::getenv("BB_ARENA_FREE");
                 return env == nullptr || env[0] != '0';
             }();
+            UnpublishArena(first_arena);
             if (free_replaced) {
                 const_cast<Buffer*>(first_arena)->buffer.Destroy();
             }
-            address_space[first_page] = nullptr;
             first_arena = nullptr;
         }
         if (!first_arena) {
-            const u64 base = Common::AlignDownPow2<u64>(need_start, arena_page_size);
+            // A 512 MiB-page base turns a tiny access near the page end into a 320-512 MiB
+            // contiguous allocation. Dozen places every memory type in the same heap and refuses
+            // those allocations long before the 5120 MiB app ceiling. Re-anchor at the existing
+            // 64 MiB allocation quantum; covers() rebuilds safely if a later access is elsewhere.
+            const u64 base = Common::AlignDownPow2<u64>(need_start, 64_MB);
             const u64 aligned = Common::AlignUpPow2<u64>(need_end - base, 64_MB);
             const u64 size = std::min<u64>(std::max<u64>(aligned, 64_MB), arena_page_size);
             auto* new_arena = &arenas.emplace_back(instance, base, size, ArenaMemoryType());
@@ -1600,7 +1615,12 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
     const u64 last_size = last_arena ? last_arena->size_bytes : arena_page_size;
 
     const u64 base_block = first_addr >> block_shift;
-    const u64 total_size = first_size + last_size;
+    // Demand-sized allocations on adjacent VA pages are separated by the page boundary. Their
+    // sizes cannot simply be added (64+64 MiB would not cover the crossing request). Cover through
+    // the end of the requested range, aligned for the allocator, while retaining existing content.
+    const u64 requested_end = (last_block + 1) << block_shift;
+    const u64 total_size = std::max(first_size + last_size,
+                                    Common::AlignUpPow2<u64>(requested_end - first_addr, 64_MB));
     const u64 end_block = (first_addr + total_size) >> block_shift;
 #ifdef UNCHARTED_UWP
     /* The console ICD exposes one device-local heap and accepts overcommit for small resources but
@@ -1611,9 +1631,11 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
     if (!sparse_supported && (first_arena || last_arena)) {
         scheduler.Finish();
         if (first_arena) {
+            UnpublishArena(first_arena);
             const_cast<Buffer*>(first_arena)->buffer.Destroy();
         }
         if (last_arena && last_arena != first_arena) {
+            UnpublishArena(last_arena);
             const_cast<Buffer*>(last_arena)->buffer.Destroy();
         }
         std::printf("Buffer cache: released replaced arenas before the %.0f MiB merge\n",
@@ -1634,14 +1656,14 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
         });
     });
 
-    u64 base_page = first_addr >> arena_page_bits;
-    for (u32 page = 0; page < (first_size >> arena_page_bits); ++page) {
-        address_space[base_page + page] = new_arena;
-    }
-    base_page = last_page;
-    for (u32 page = 0; page < (last_size >> arena_page_bits); ++page) {
-        address_space[base_page + page] = new_arena;
-    }
+    // Demand-sized UWP arenas can be smaller than one 512 MiB address-space page. Mapping by
+    // `size >> arena_page_bits` then maps zero pages and leaves a destroyed arena behind, causing
+    // the same cross-page request to merge again and grow without bound. Map the complete merged
+    // address interval instead, independent of the physical allocation sizes it replaced.
+    // A cross-page request requires both virtual slots to resolve to the contiguous replacement,
+    // even when its demand-sized physical allocation is smaller than two 512 MiB VA pages.
+    address_space[first_page] = new_arena;
+    address_space[last_page] = new_arena;
     return new_arena;
 }
 

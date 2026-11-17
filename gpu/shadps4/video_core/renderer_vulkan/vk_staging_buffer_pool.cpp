@@ -275,7 +275,9 @@ void StagingBufferPool::TickFrame() {
         TrimRing(rings[i], tight && i == u32(MemoryType::DeviceLocal));
     }
     for (size_t i = 0; i < large_caches.size(); ++i) {
-        TrimLarge(large_caches[i], tight && i == u32(MemoryType::DeviceLocal));
+        // Large staging buffers of every memory type count against the same absolute UWP app
+        // budget. Under pressure, retire any idle/free entry after ~4 s, not only device-local.
+        TrimLarge(large_caches[i], tight);
     }
     PublishStats();
 }

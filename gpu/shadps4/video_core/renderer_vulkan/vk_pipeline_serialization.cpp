@@ -409,7 +409,7 @@ void PipelineCache::WarmUpThread() {
     std::ranges::sort(stage_hashes);
     stage_hashes.erase(std::unique(stage_hashes.begin(), stage_hashes.end()), stage_hashes.end());
     std::vector<LoadedStage> stages(stage_hashes.size());
-    std::vector<u8> stage_failure(stage_hashes.size(), 0); // 1=no meta, 2=meta/gate, 3=motion, 4=no spv
+    std::vector<u8> stage_failure(stage_hashes.size(), 0); // 1=no meta, 2=bad meta, 3=motion, 4=no spv, 5=forced, 6=focus
     ParallelFor(stages.size(), threads, [&](size_t i) {
         auto& stage = stages[i];
         std::vector<u8> meta_blob;
@@ -423,10 +423,18 @@ void PipelineCache::WarmUpThread() {
         stage.program = std::make_unique<Program>();
         stage.spec.info = &stage.program->info;
         std::optional<Shader::Gcn::FetchShaderData> unused;
-        if (!LoadShaderMeta(meta_ar, stage.program->info, unused, stage.spec, stage.perm_idx) ||
-            Shader::Backend::SPIRV::IsForcedShader(stage.program->info.pgm_hash) ||
-            BbFocusFix::FocusCentreShader(stage.program->info.pgm_hash)) {
+        if (!LoadShaderMeta(meta_ar, stage.program->info, unused, stage.spec, stage.perm_idx)) {
             stage_failure[i] = 2;
+            stage.program.reset();
+            return;
+        }
+        if (Shader::Backend::SPIRV::IsForcedShader(stage.program->info.pgm_hash)) {
+            stage_failure[i] = 5;
+            stage.program.reset();
+            return;
+        }
+        if (BbFocusFix::FocusCentreShader(stage.program->info.pgm_hash)) {
+            stage_failure[i] = 6;
             stage.program.reset();
             return;
         }
@@ -535,6 +543,7 @@ void PipelineCache::WarmUpThread() {
             {
                 std::shared_lock lock{pipelines_mutex};
                 if (compute_pipelines.contains(entry.ckey)) {
+                    preload_status[i] = 1;
                     return;
                 }
             }
@@ -581,6 +590,7 @@ void PipelineCache::WarmUpThread() {
         {
             std::shared_lock lock{pipelines_mutex};
             if (graphics_pipelines.contains(entry.gkey)) {
+                preload_status[i] = 1;
                 ReleaseClaim(claim_id);
                 return;
             }
