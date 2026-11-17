@@ -30,3 +30,5 @@ The code covers direct/indirect draw and compute-record paths. Cross-page merge 
 ## Remaining work
 
 The observed lifetime failure no longer reproduced in the short copy-skipping test. This does **not** prove sustained gameplay, correct arena data coherence, valid null descriptors, correct topology or correct rendering. The loading-coin wedge remains unresolved. The transfer-path stall with copies enabled is now a separate reproducible target.
+
+A later unpublished render-based copy experiment (`.1515`, ordinary descriptor sets, no full-frame scratch) also reproduced device loss. Seven copy draws were recorded; timeline batches through 18123 completed, while batch 18124 stalled. That batch included many scene draws as well as copies, so this does not isolate the fault to one copy instruction or prove a driver transfer defect. A per-copy completion-boundary diagnostic is the next step; the render backend is not a validated replacement.
