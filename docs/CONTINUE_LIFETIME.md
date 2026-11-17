@@ -46,4 +46,12 @@ With that one fragment shader skipped, and the colour/depth copies still **activ
 - sampled RAM stayed near 3711-3755 MiB of the 5120 MiB ceiling;
 - the log contained no `device was lost`, no GPU stall and no new access violation.
 
-That is not a fix. Skipping a fragment shader is a diagnostic workaround, and it leaves a large black triangular region — the same triangular defect seen on the loading coin, which strongly suggests both come from this draw rather than from the copy path. The process also returned to the dashboard after about two minutes without a new access violation, and that exit is unexplained. The 600-second gameplay gate is **not** met.
+That is not a fix. Skipping a fragment shader is a diagnostic workaround, and it leaves a large black triangular region — the same triangular defect seen on the loading coin, which strongly suggests both come from this draw rather than from the copy path.
+
+## The exit is GPU loss, not a clean close
+
+Adding shutdown markers (CoreWindow Closed handler and the event-loop return) never fired on exit. An instrumented rerun with the composite active logged `GPU stall: waiting 5 s` and then `GPU crash: the graphics device was lost`. The app disappearing is therefore a consequence of the lost device, not a separate window-close path, and RAM was around 3.4-3.7 GiB of the 5120 MiB ceiling, so neither memory pressure nor a graceful close explains it.
+
+A guard that stops non-multiple-of-four index counts from taking the QUAD_LIST expansion path did not prevent the loss either: the stall simply moved to the same composite draw. The composite fragment shader itself is now the primary suspect rather than the geometry feeding it.
+
+The 600-second gameplay gate is **not** met.
