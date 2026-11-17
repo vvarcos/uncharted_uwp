@@ -159,6 +159,7 @@ if(UNCHARTED_UWP)
     # Visual RAM/FPS HUD drawn by shim/bbport_overlay_uwp.cpp.
     add_host_shader(hud.vert hud_vert)
     add_host_shader(hud.frag hud_frag)
+    add_host_shader(uwp_depth_copy.frag uwp_depth_copy_frag)
 endif()
 add_host_shader(fsr.comp fsr_easu_comp SAMPLE_EASU=1)
 add_host_shader(fsr.comp fsr_rcas_comp SAMPLE_RCAS=1)
