@@ -8,11 +8,13 @@ implements Vulkan 1.2 on top of D3D12 (feature level 11_0, shader model 6.4).
 This repository is a snapshot of the work in progress. It contains **no game code and no game
 assets**. You need your own decrypted dump of the collection.
 
-> **Status: milestone M5 (gameplay) is partial.**
+> **Status: M5 gate met on console; the copy path is still bypassed.**
 > M1 (UWP loader), M2 (sparse/demand guest memory, original entry), M3 (memory and runtime
-> services) and M4 (connected renderer, movies and 3D menu) are complete. M5 has real frames
-> presented through CoreWindow, but **no gameplay run has been validated end to end**. A real
-> frame, the menu, or a loading screen is progress, not a closed milestone.
+> services), M4 (connected renderer, movies and 3D menu) and the M5 gate (24+ pipelines, three
+> arenas, 600 s of continuous gameplay, peak under 5000 MiB) are measured on hardware. What is
+> **not** solved is rendering correctness: the colour/depth copy path still triggers
+> `DEVICE_HUNG`, so `BB_SKIP_COPY=1` stays on and the image is approximate. Treat that as the
+> open item, not the milestones.
 
 > **AI-generated work.** Every change in this repository — code, scripts, documentation, audits and
 > Git history — was produced by AI agents under human direction. Read
@@ -28,6 +30,11 @@ assets**. You need your own decrypted dump of the collection.
   presented through the CoreWindow bridge.
 - With the colour/depth copy path bypassed (diagnostic mode only) the first scene renders at
   720p and the process survives several minutes of presentation.
+- Three independent runs held gameplay for over 600 s each at a peak of 3837–3897 MiB against the
+  5120 MiB ceiling, with 31 graphics and 17 compute pipelines compiled on demand in one of them.
+- The console HUD draws current/peak/limit RAM and FPS/frame time over the game; the peak is
+  sampled on every present, so it is authoritative rather than a 2 Hz estimate.
+- Button prompts stay the dump's PlayStation glyphs instead of being replaced with PC keys.
 
 ## What does not work yet
 

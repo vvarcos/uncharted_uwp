@@ -11,7 +11,7 @@ out of it. Every entry below corresponds to console evidence; nothing here is a 
 | M2 | Sparse/demand guest memory and the game's own entry point | **done** |
 | M3 | Guest runtime services and memory contract on console | **done** |
 | M4 | Connected renderer: movies, 3D menu, first real frames | **done** |
-| M5 | Gameplay: 24 pipelines, three arenas, 600 s, peak < 5000 MiB | **partial** |
+| M5 | Gameplay: 24 pipelines, three arenas, 600 s, peak < 5000 MiB | **met on console; copy path still bypassed** |
 | M6 | Uncharted 2 and 3 | not started |
 
 M5 is judged as a whole. A real frame, the menu or a finished level load is progress, never a
@@ -112,8 +112,33 @@ did not help. See [MEMORY](MEMORY.md).
 
 A separate precompile mode waits for the warm-up, saves the pipeline cache and exits before the
 guest starts: the console showed `waiting` → `complete`, zero compilations in the log and no
-assert. Persistence and reuse from the game path are still unproven, and the precompile screen has
-no visual menu yet.
+assert. A later seed measured `Pipeline cache: preloaded 133 of 134 pipelines` (194 shaders,
+1.5 s) reading 524 files; the one key left out is a deliberate focus-fix shader (`why=6`), not a
+corrupt entry. The game path then reuses that cache instead of compiling.
+
+### The HUD and the 600 s gate
+
+The UWP build used to leave the overlay inert because the desktop menu needs SDL and Dear ImGui.
+It now draws two lines straight into the swapchain image the presenter already leaves in
+`ColorAttachmentOptimal`: one dynamic-rendering pass, one pipeline, one atlas baked once from the
+embedded font and one host-visible vertex buffer per image. Cost is 75 KiB and there is no
+per-frame allocation. On console the capture reads `RAM 3229/3486/5120 MiB` and
+`39.9 FPS 25.08 ms`.
+
+The peak shown there is not a 2 Hz sample: `AppMemoryUsage` is now read on every present and the
+running maximum is kept, so the number is authoritative for the ceiling.
+
+Three independent runs then held gameplay for over 600 s each (41 774 / 38 037 / 37 603 frames)
+with peaks of 3888 / 3897 / 3837 MiB — more than 1200 MiB of headroom — and no assert, STOP,
+`DEVICE_HUNG` or access violation. One run compiled 31 graphics and 17 compute pipelines on
+demand, over the 24 required.
+
+Two memory faults were fixed on the way. `GetArena` published only whole 512 MiB pages, so a
+demand-sized arena smaller than a page left pointers to a destroyed buffer and repeated the same
+cross-page merge (measured: nine merges growing 512 → 1088 MiB); it now publishes both virtual
+pages and unpublishes every alias before destroying. And anchoring a tiny access at the 512 MiB
+page base produced 320–512 MiB allocations that the Dozen heap refuses long before the app
+ceiling; windows are anchored in 64 MiB quanta instead.
 
 ## Decisions that are closed
 

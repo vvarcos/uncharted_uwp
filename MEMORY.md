@@ -27,7 +27,8 @@ The buffer/cache arena alone is 1024 MiB of that budget. Planning a change that 
 | Renderer created and bound | +631 MiB |
 | Buffer-cache arena (resident) | 1024 MiB |
 | Steady guest with demand arenas, no STOP, ~5 min | ~2650 MiB |
-| Level load running with the copy path active | up to ~5056 MiB peak |
+| Level load running with the copy path active | up to ~5056 MiB peak (pre-fix failure case) |
+| Gameplay >600 s, copies bypassed, after the arena fixes | 3837–3897 MiB peak |
 
 Those are different runs on purpose: the boot/renderer numbers explain fixed cost, the steady
 number shows the demand-allocated base, and the ceiling number is the failure case described in
@@ -62,8 +63,18 @@ With the three 512 MiB arenas inside the allocation total, roughly **989 MiB of 
 remain on top. The growth is in **buffers**, not images, and `BufferCache` has no LRU or trim
 policy: once a buffer is created it lives until the process ends.
 
-This is the current hard problem. Freeing pages, decommitting, or dropping caches does not address
-it; the only lever is allocating fewer or smaller buffers, or evicting them safely.
+This was the hard problem, and two bugs explain most of it:
+
+- `GetArena` mapped address-space pages with `size >> arena_page_bits`. A demand-sized arena below
+  one 512 MiB page mapped **zero** pages, so a destroyed arena stayed referenced and the same
+  cross-page request merged again — nine times in one measured run, growing 512 → 576 → … → 1088
+  MiB. It now publishes both virtual pages and unpublishes every alias before destroying.
+- Anchoring the window at the 512 MiB page base turned a 0.1–2.8 MiB access near the page end into a
+  320–512 MiB contiguous allocation, which Dozen refuses (all memory types sit in one 1280 MiB heap
+  that the ICD overcommits) long before the 5120 MiB app ceiling. Windows are anchored in the
+  existing 64 MiB quantum, and `covers()` rebuilds safely on a later distant access.
+
+Idle large staging buffers are also retired after ~4 s under pressure instead of 50 s.
 
 ## 5. Allocations that were fixed
 

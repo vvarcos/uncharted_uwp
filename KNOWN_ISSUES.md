@@ -1,16 +1,18 @@
 # Known issues
 
-Ordered by how much they block milestone M5. Everything here is reproduced on console; desktop
+Ordered by how much they block the port. Everything here is reproduced on console; desktop
 results are not listed as issues.
 
-## 1. M5 is not closed — no validated gameplay
+## 1. The M5 gate is met, rendering correctness is not
 
-**Status:** open, blocking the milestone.
+**Status:** gate closed on console; correctness open.
 
-The guest boots, reaches the real menu, opens Friend Stats and starts loading the level with
-scripted input. With the colour/depth copy path bypassed, the first scene renders and presents for
-several minutes. None of that is a validated gameplay run: M5 closes only with 24 pipelines, the
-three arenas, 600 seconds of gameplay and a peak below 5000 MiB.
+Three independent runs held gameplay for over 600 s (41 774 / 38 037 / 37 603 frames) with peaks of
+3888 / 3897 / 3837 MiB against the 5120 MiB ceiling, no assert, STOP, `DEVICE_HUNG` or access
+violation, and one of them compiled 31 graphics plus 17 compute pipelines on demand. The three
+512 MiB arenas are unchanged. What remains is that those runs depend on item 2: the colour/depth
+copies are skipped, so the frame is approximate. "Gate met" here never means "the picture is
+correct".
 
 ## 2. `DXGI_ERROR_DEVICE_HUNG` on the colour/depth copy path
 
@@ -49,16 +51,22 @@ buffer.
 
 ## 3. Memory ceiling once the copies are bypassed
 
-**Status:** blocker #2. Measured, not fixed.
+**Status:** gate passed (3837–3897 MiB peak over 600 s); churn remains.
 
-With the copies skipped there are no device-hung failures, but the run ends at the absolute app
-ceiling: `M5 ASSERT buffer.cpp:318` with `used=5056 peak=5056 limit=5120 MiB` and
-`committed=1863 released=0`. A later run hit 5078 MiB.
+Before the fixes the run ended at the absolute app ceiling: `M5 ASSERT buffer.cpp:318` with
+`used=5056 peak=5056 limit=5120 MiB` and `committed=1863 released=0`. The growth was in **buffers**,
+not images, and `BufferCache` has no LRU.
 
-The growth is in **buffers**, not images: 2525 buffers, 181 images, roughly 989 MiB of guest
-buffers beyond the three arenas, and `BufferCache` has no LRU/trim. Decommitting freed nothing
-(`released=0`), so the answer must be fewer or smaller allocations, or safe eviction. Details and
-the rejected hypotheses are in [MEMORY](MEMORY.md).
+What changed: `GetArena` used to publish only whole 512 MiB pages, so a demand-sized arena smaller
+than a page left dangling pointers behind and repeated the same cross-page merge (nine merges
+growing 512 → 1088 MiB); it now publishes both virtual pages and unpublishes every alias before
+destroying. Anchoring a tiny access at the page base also produced 320–512 MiB allocations that the
+Dozen heap refuses well before the app ceiling, so windows are anchored in 64 MiB quanta. Idle large
+staging buffers are trimmed after ~4 s under pressure instead of 50 s.
+
+Three runs then held >600 s at 3888 / 3897 / 3837 MiB. Still open: tens of thousands of arena window
+rebuilds per session, and a single 7–8 s freeze at the first scene boundary — measured as the guest
+waiting on GPU work (`flips=0`), not a lost flip. Details in [MEMORY](MEMORY.md).
 
 ## 4. Dozen does not implement everything it advertises
 
