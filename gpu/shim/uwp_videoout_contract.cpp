@@ -314,6 +314,9 @@ PadScript& CurrentPadScript() {
     static PadScript script{};
     static u64 last_check{};
     static bool logged{};
+    static u64 last_pulse{};
+    static u64 pulse_start{};
+    static u32 active_ttl{};
     const u64 now = std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::steady_clock::now().time_since_epoch())
                         .count();
@@ -321,6 +324,9 @@ PadScript& CurrentPadScript() {
         return script;
     }
     last_check = now;
+    if (last_pulse && active_ttl && now - pulse_start >= active_ttl) {
+        script = {}; // Expire even if the input file disappears or cannot be reopened.
+    }
     const char* path = std::getenv("BB_PAD_FILE");
     if (path == nullptr || path[0] == '\0') {
         return script;
@@ -338,8 +344,16 @@ PadScript& CurrentPadScript() {
         {"right", PAD_RIGHT},
     };
     PadScript next{};
+    u64 pulse{};
+    u32 ttl_ms{};
     char token[64];
     while (std::fscanf(file, "%63s", token) == 1) {
+        if (std::strncmp(token, "pulse=", 6) == 0) {
+            pulse = std::strtoull(token + 6, nullptr, 10);
+        } else if (std::strncmp(token, "ttl_ms=", 7) == 0) {
+            const int ttl = std::atoi(token + 7);
+            ttl_ms = static_cast<u32>(ttl < 50 ? 50 : ttl > 5000 ? 5000 : ttl);
+        }
         for (const auto& [name, bit] : names) {
             if (std::strcmp(token, name) == 0) {
                 next.buttons |= bit;
@@ -354,6 +368,21 @@ PadScript& CurrentPadScript() {
         }
     }
     std::fclose(file);
+    // Optional automation pulse: release even if the portal disappears before the neutral upload.
+    // Legacy pad files without pulse/ttl_ms keep their existing held-state semantics.
+    if (pulse && ttl_ms) {
+        active_ttl = ttl_ms;
+        if (pulse != last_pulse) {
+            last_pulse = pulse;
+            pulse_start = now;
+        }
+        if (now - pulse_start >= ttl_ms) {
+            next = {};
+        }
+    } else {
+        last_pulse = 0;
+        active_ttl = 0;
+    }
     if (!logged || next.buttons != script.buttons) {
         logged = true;
         std::printf("M5 Pad: scripted buttons=0x%x\n", next.buttons);
@@ -511,7 +540,13 @@ int PS4_SYSV_ABI PadRead(s32 handle, void* data, s32 count) {
 #ifdef UNCHARTED_UWP
     const PadLive live = ReadLivePad();
     buttons |= live.buttons;
-    if (live.buttons != 0) {
+    /* The scripted file only owns the analog axes while it actually moves them. A neutral script
+     * (our automation writes 128s so buttons can be pulsed) must not freeze the real controller:
+     * before this, the live sticks were used only while a button was held, so moving with the stick
+     * alone inside the level read as centered and the character never walked. */
+    const bool script_moves = std::ranges::any_of(
+        script.sticks, [](u8 value) { return value != 128; });
+    if (!script_moves) {
         sticks = live.sticks;
     }
 #endif
