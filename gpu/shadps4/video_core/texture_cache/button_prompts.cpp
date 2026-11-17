@@ -1029,7 +1029,13 @@ std::vector<Patch> Build(const Sheet& sheet, u32 levels, Style style) {
 } // namespace
 
 namespace {
+#ifdef UNCHARTED_UWP
+// The console has no keyboard and the dump is the PS4 build: start on the PlayStation pad so the
+// game's own button pictures are kept.
+std::atomic<int> device_used{1}; ///< 0 keyboard and mouse, 1 PlayStation pad, 2 Xbox or other pad
+#else
 std::atomic<int> device_used{0}; ///< 0 keyboard and mouse, 1 PlayStation pad, 2 Xbox or other pad
+#endif
 std::atomic<u32> switches{0};
 
 enum class Force : u8 { Auto, Off, Keyboard, Xbox };
@@ -1040,7 +1046,11 @@ Force Forced() {
     static const Force forced = [] {
         const char* env = std::getenv("BB_BUTTON_PROMPTS");
         if (!env || !*env || !std::strcmp(env, "auto")) {
+#ifdef UNCHARTED_UWP
+            return Force::Off; // keep the game's own PlayStation glyphs; no keyboard overlay
+#else
             return Force::Auto;
+#endif
         }
         if (!std::strcmp(env, "keyboard")) {
             return Force::Keyboard;

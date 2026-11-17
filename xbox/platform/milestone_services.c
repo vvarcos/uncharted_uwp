@@ -3,14 +3,19 @@
 #include "gpu/bbgpu.h"
 #include <stdio.h>
 
-#define UNPORTED(name) uintptr_t runtime_##name##_resolve(const char *nid) { (void)nid; return 0; }
+/* Weak: once a real implementation is linked in (bbruntime now carries audio/pad/media), the
+ * strong definition must win instead of colliding with these placeholders. */
+#define UNPORTED(name) \
+    __attribute__((weak)) uintptr_t runtime_##name##_resolve(const char *nid) { (void)nid; return 0; }
 
+UNPORTED(audio)
 UNPORTED(ajm)
 UNPORTED(pad)
-void runtime_ajm_report(void) { puts("UWP milestone: media decoding deferred"); }
-void runtime_pad_report(void) { puts("UWP milestone: controller API deferred"); }
-int runtime_pad_describe(void) { return 0; }
-int runtime_pad_tool(int test, int strength) { (void)test; (void)strength; return 0; }
+__attribute__((weak)) void runtime_audio_report(void) { puts("UWP milestone: audio deferred"); }
+__attribute__((weak)) void runtime_ajm_report(void) { puts("UWP milestone: media decoding deferred"); }
+__attribute__((weak)) void runtime_pad_report(void) { puts("UWP milestone: controller API deferred"); }
+__attribute__((weak)) int runtime_pad_describe(void) { return 0; }
+__attribute__((weak)) int runtime_pad_tool(int test, int strength) { (void)test; (void)strength; return 0; }
 const RuntimeGuestCallback *runtime_guest_callbacks(size_t *count) { if (count) *count=0; return 0; }
 
 /* M4 registers the unmodified shadPS4 event queues through a standalone UWP-safe
