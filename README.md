@@ -8,13 +8,15 @@ implements Vulkan 1.2 on top of D3D12 (feature level 11_0, shader model 6.4).
 This repository is a snapshot of the work in progress. It contains **no game code and no game
 assets**. You need your own decrypted dump of the collection.
 
-> **Status: M5 gate met on console; the copy path is still bypassed.**
-> M1 (UWP loader), M2 (sparse/demand guest memory, original entry), M3 (memory and runtime
-> services), M4 (connected renderer, movies and 3D menu) and the M5 gate (24+ pipelines, three
-> arenas, 600 s of continuous gameplay, peak under 5000 MiB) are measured on hardware. What is
-> **not** solved is rendering correctness: the colour/depth copy path still triggers
-> `DEVICE_HUNG`, so `BB_SKIP_COPY=1` stays on and the image is approximate. Treat that as the
-> open item, not the milestones.
+> **Status: M5 partial — Continue currently crashes on console.**
+> Earlier claims that the 600-second gameplay gate was met were premature: the long runs proved
+> presentation, not independently verified continuous gameplay. The visual RAM/FPS HUD works,
+> but loading/Continue and rendering correctness remain unresolved. Copy skipping is still a
+> diagnostic workaround, not a fix. Do not treat this port as playable end to end.
+>
+> A diagnostic console run identified buffers destroyed during resource binding, immediately
+> before an access violation in the descriptor-update path. A lifetime correction is under review;
+> neither the crash nor the loading coin's triangular cutout has been fixed yet.
 
 > **AI-generated work.** Every change in this repository — code, scripts, documentation, audits and
 > Git history — was produced by AI agents under human direction. Read
@@ -30,10 +32,11 @@ assets**. You need your own decrypted dump of the collection.
   presented through the CoreWindow bridge.
 - With the colour/depth copy path bypassed (diagnostic mode only) the first scene renders at
   720p and the process survives several minutes of presentation.
-- Three independent runs held gameplay for over 600 s each at a peak of 3837–3897 MiB against the
-  5120 MiB ceiling, with 31 graphics and 17 compute pipelines compiled on demand in one of them.
-- The console HUD draws current/peak/limit RAM and FPS/frame time over the game; the peak is
-  sampled on every present, so it is authoritative rather than a 2 Hz estimate.
+- Long presentation runs recorded sampled maxima of 3837–3897 MiB against the 5120 MiB ceiling,
+  with 31 graphics and 17 compute pipelines compiled on demand in one run. These observations
+  do not prove 600 seconds of interactive gameplay or successful level loading.
+- The console HUD draws RAM usage and FPS/frame time over the game. Memory is queried every
+  present; its running maximum is still sampled and is not an OS-guaranteed lifetime peak.
 - Button prompts stay the dump's PlayStation glyphs instead of being replaced with PC keys.
 
 ## What does not work yet
