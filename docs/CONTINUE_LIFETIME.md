@@ -55,3 +55,7 @@ Adding shutdown markers (CoreWindow Closed handler and the event-loop return) ne
 A guard that stops non-multiple-of-four index counts from taking the QUAD_LIST expansion path did not prevent the loss either: the stall simply moved to the same composite draw. The composite fragment shader itself is now the primary suspect rather than the geometry feeding it.
 
 The 600-second gameplay gate is **not** met.
+
+### Next diagnostic, already specified
+
+The composite's SPIR-V has never been dumped: the existing shader dumps cover only compute programs, and that was a limitation of the dump filter rather than of the tooling (the dumper is stage agnostic). Running with `BB_PIPELINE_CACHE=0` and `BB_DUMP_SHADERS=0xb4fa3a82` should emit that fragment shader for offline disassembly, which is the next step before any claim about why the device is lost. The draw is identified by shape as the scene composite (`OnSceneComposite`), not by hash, and it is not the jitter pass.
