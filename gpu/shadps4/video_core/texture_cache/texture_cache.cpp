@@ -863,7 +863,7 @@ std::vector<std::pair<VAddr, u32>> prompt_ranges;
 /// bbport: a button icon sheet or big prompt picture the game uploaded gets keyboard and mouse
 /// (or Xbox) pictures over its PlayStation buttons (button_prompts.cpp), recorded after the game's own
 /// upload.
-void ReplaceButtonPrompts(Vulkan::Runtime& runtime, Image& image) {
+void ReplaceButtonPrompts(Vulkan::Runtime& runtime, Image& image, u32 uploaded_mips) {
     const auto& info = image.info;
     ButtonPrompts::Format format;
     switch (info.pixel_format) {
@@ -901,14 +901,31 @@ void ReplaceButtonPrompts(Vulkan::Runtime& runtime, Image& image) {
     if (patches->empty()) {
         return; // the game's own picture, just uploaded
     }
+    // Mips kept from the GPU hold text the game drew into this texture. Stamping all 29 slots
+    // over one again is what duplicated the prompt, so only touch mips re-read from the guest.
+    u32 applied = 0;
     u64 total = 0;
     for (const auto& patch : *patches) {
+        if ((uploaded_mips & (1u << patch.mip)) == 0) {
+            continue;
+        }
+        ++applied;
         total += Common::AlignUp(patch.data.size(), 16);
+    }
+    std::printf("M5 prompt: %llx:%x mips=%u mip0=%u style=%d patches=%u/%zu\n",
+                static_cast<unsigned long long>(info.guest_address), info.guest_size,
+                info.resources.levels, mip.offset, int(ButtonPrompts::Shown()), applied,
+                patches->size());
+    if (applied == 0) {
+        return;
     }
     const auto staging = runtime.GetStagingPool().Request(total, MemoryType::HostUncached, 16);
     boost::container::small_vector<vk::BufferImageCopy, 32> copies;
     u64 offset = 0;
     for (const auto& patch : *patches) {
+        if ((uploaded_mips & (1u << patch.mip)) == 0) {
+            continue;
+        }
         std::memcpy(staging.mapped + offset, patch.data.data(), patch.data.size());
         copies.push_back({
             .bufferOffset = staging.offset + offset,
@@ -982,6 +999,7 @@ void TextureCache::RefreshImage(Image& image) {
 
     BbStats::image_upload_bytes.fetch_add(image.info.guest_size, std::memory_order_relaxed);
     boost::container::small_vector<vk::BufferImageCopy, 14> image_copies;
+    u32 uploaded_mips = 0;
     for (u32 m = 0; m < num_mips; m++) {
         const u32 width = std::max(image.info.size.width >> m, 1u);
         const u32 height = std::max(image.info.size.height >> m, 1u);
@@ -1029,6 +1047,7 @@ void TextureCache::RefreshImage(Image& image) {
             .imageOffset = {0, 0, 0},
             .imageExtent = {extent_width, extent_height, depth},
         });
+        uploaded_mips |= 1u << m;
     }
 
     if (image_copies.empty()) {
@@ -1046,7 +1065,7 @@ void TextureCache::RefreshImage(Image& image) {
     }
 
     runtime.UploadImage(&image, buffer, image_copies);
-    ReplaceButtonPrompts(runtime, image);
+    ReplaceButtonPrompts(runtime, image, uploaded_mips);
 }
 
 vk::Sampler TextureCache::GetSampler(const AmdGpu::Sampler& sampler,
