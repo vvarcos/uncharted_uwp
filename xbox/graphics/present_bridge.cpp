@@ -184,6 +184,11 @@ Presenter::Presenter(vk::PhysicalDevice physical,vk::Device device,vk::Queue que
     auto fence_result=device.createFenceUnique({}); Check(fence_result.result,"Create bridge fence"); p.vk_fence=std::move(fence_result.value);
     auto acquired=device.createSemaphoreUnique({}); Check(acquired.result,"Create acquire semaphore"); p.acquired=std::move(acquired.value);
     auto ready=device.createSemaphoreUnique({}); Check(ready.result,"Create ready semaphore"); p.ready=std::move(ready.value);
+    // bbport: the stall report lists semaphores by handle; without this line the bridge's two are
+    // anonymous and a wait on them cannot be attributed.
+    std::printf("M5 bridge semaphores: acquired=%p ready=%p\n",
+                static_cast<void*>(static_cast<VkSemaphore>(*p.acquired)),
+                static_cast<void*>(static_cast<VkSemaphore>(*p.ready)));
     std::printf("CoreWindow presentation bridge: %ux%u, shared image %llu KiB\n",width,height,static_cast<unsigned long long>(req.size>>10));
 }
 Presenter::~Presenter()=default;
