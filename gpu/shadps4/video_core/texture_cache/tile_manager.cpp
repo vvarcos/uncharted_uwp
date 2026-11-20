@@ -23,6 +23,8 @@
 #include "video_core/host_shaders/tiling_micro_8_comp.h"
 #include "video_core/host_shaders/tiling_micro_96_comp.h"
 
+#include <atomic>
+#include <cstdio>
 #include <magic_enum/magic_enum.hpp>
 #include <vk_mem_alloc.h>
 
@@ -304,6 +306,18 @@ void TileManager::RecordTilingDispatch(vk::Pipeline pipeline, const vk::Descript
 
 std::pair<const Buffer*, u64> TileManager::DetileImage(const VideoCore::Buffer* in_buffer,
                                                        u64 in_offset, const ImageInfo& info) {
+    // bbport: one raw line per tiling shape, so a console log says whether the detile actually runs
+    // for the formats on screen (the LOG_INFO above is filtered out of loader.log).
+    {
+        static std::atomic<u32> reports{0};
+        if (reports.fetch_add(1, std::memory_order_relaxed) < 24) {
+            std::printf("M5 detile: tiled=%d tile_mode=%u bits=%u block=%d %ux%u levels=%u\n",
+                        int(info.props.is_tiled), u32(info.tile_mode), u32(info.num_bits),
+                        int(info.props.is_block), info.size.width, info.size.height,
+                        u32(info.resources.levels));
+            std::fflush(stdout);
+        }
+    }
     if (!info.props.is_tiled) {
         return {in_buffer, in_offset};
     }

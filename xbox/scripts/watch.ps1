@@ -23,14 +23,13 @@ $root = Split-Path $PSScriptRoot -Parent
 . (Join-Path $PSScriptRoot 'Xbox.Common.ps1')
 
 $portal = Open-XboxPortal $Console '' $false 60
+$base = (Get-XboxDeviceConfig $Console '' '').url.TrimEnd('/')
 if (!$App) {
-    $app = (Invoke-RestMethod ((Get-XboxDeviceConfig $Console '' '').url.TrimEnd('/') +
-        '/api/app/packagemanager/packages') -SkipCertificateCheck).InstalledPackages |
-        Where-Object { $_.PackageFullName -match 'NDCUWP' } |
+    $packages = (Invoke-RestMethod "$base/api/app/packagemanager/packages" -SkipCertificateCheck).InstalledPackages
+    $App = ($packages | Where-Object { $_.PackageFullName -match 'NDCUWP' } |
         Sort-Object { [int]$_.Version.Build * 100000 + [int]$_.Version.Revision } -Descending |
-        Select-Object -First 1
-    if (!$app) { throw 'No Uncharted package installed on this console.' }
-    $App = $app.PackageFullName
+        Select-Object -First 1).PackageFullName
+    if (!$App) { throw 'No Uncharted package installed on this console.' }
 }
 if (!$OutDir) {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
@@ -45,9 +44,10 @@ $shotScript = Join-Path $PSScriptRoot 'xbox-screenshot.ps1'
 $result = 'timeout'
 
 while ((Get-Date) -lt $deadline) {
-    $processes = (Invoke-RestMethod ((Get-XboxDeviceConfig $Console '' '').url.TrimEnd('/') +
+    $processes = @((Invoke-RestMethod ((Get-XboxDeviceConfig $Console '' '').url.TrimEnd('/') +
         '/api/resourcemanager/processes') -SkipCertificateCheck).Processes |
-        Where-Object { $_.PackageFullName -eq $App -and $_.IsRunning }
+        Where-Object { $_.PSObject.Properties.Name -contains 'PackageFullName' } |
+        Where-Object { $_.PackageFullName -eq $App -and $_.IsRunning })
     if (!$processes) {
         $result = 'app-exited'
         break
