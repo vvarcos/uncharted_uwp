@@ -58,6 +58,12 @@ copies.
   one frame; compare with the guest's GNF format. Check `texture_cache` for format fallbacks that
   silently pick a different layout.
 - Accept: the format the shader samples is the format the asset was uploaded with, in the log.
+- **Done so far:** all 29 sampled formats are sane (BC1 sRGB, BC4, RGBA16F, D16, RGBA8), and the
+  detile runs with correct geometry (`2048x1024` BC1, 12 levels, pitch 2048, size 1 048 576).
+- **Refuted:** dividing the upload row length into blocks. With it on, the app presents 749 frames
+  then fails a `VkResult` check, and later launches never present
+  (`runs/block-row-always-on-fecha-janela-20-11-1232/`). The switch `BB_BLOCK_ROW_BLOCKS=1` remains
+  only to avoid repeating the experiment.
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors

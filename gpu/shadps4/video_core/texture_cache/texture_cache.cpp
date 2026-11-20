@@ -1001,9 +1001,11 @@ void TextureCache::RefreshImage(Image& image) {
 
         const u32 extent_width = mip_pitch ? std::min(mip_pitch, width) : width;
         const u32 extent_height = mip_height ? std::min(mip_height, height) : height;
-        // Vulkan counts bufferRowLength/bufferImageHeight in texel *blocks* for compressed formats.
-        // The pixel pitch was the long-standing behaviour; the block form is opt-in while it is being
-        // validated, because the first build with it always-on stopped presenting at startup.
+        // Vulkan counts bufferRowLength/bufferImageHeight in texel *blocks* for compressed formats,
+        // but this upload cannot simply divide the pitch: with the division on, the app presents 749
+        // frames and then fails a VkResult check during texture allocations, and later launches never
+        // present at all (runs/block-row-always-on-fecha-janela-20-11-1232). Kept as a switch so the
+        // experiment is not repeated blindly; the extent and mip offsets are still in pixels.
         static const bool block_rows = [] {
             const char* env = std::getenv("BB_BLOCK_ROW_BLOCKS");
             return env != nullptr && env[0] == '1';
