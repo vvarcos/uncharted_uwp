@@ -9,6 +9,8 @@ Created by [`new-run.ps1`](../xbox/scripts/new-run.ps1); completed by hand after
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [000-reconstrucao](000-reconstrucao/run.md) | 19-11 (written) | none | menu only | not measured | 3 837–3 897 MiB (menu) | no | baseline reconstructed from the documents |
 <!-- RUNS -->
+| [moeda-corrigida-e-meta-nova-20-11-0108](moeda-corrigida-e-meta-nova-20-11-0108/run.md) | 20-11 0108 | entry-unresolved | nao | - | - | nao | **geometria da moeda corrigida** |
+| [moeda-corrigida-e-meta-nova-20-11-0108](moeda-corrigida-e-meta-nova-20-11-0108/run.md) | 20-11 0108 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [indices-pelo-buffer-cache-20-11-0055](indices-pelo-buffer-cache-20-11-0055/run.md) | 20-11 0055 | entry-unresolved | nao (AV no Continue) | - | - | AV 0x10 | mudanca nao avaliada: Continue derruba antes da moeda |
 | [indices-pelo-buffer-cache-20-11-0055](indices-pelo-buffer-cache-20-11-0055/run.md) | 20-11 0055 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [moeda-com-renderer-novo-r0-20-11-0046](moeda-com-renderer-novo-r0-20-11-0046/run.md) | 20-11 0046 | entry-unresolved | não (loading) | 43.9 | 3 808 MiB | não | 1º build com DLL novo; R 0, cunha persiste |
@@ -28,6 +30,7 @@ Created by [`new-run.ps1`](../xbox/scripts/new-run.ps1); completed by hand after
 | [ajm-contornado-e-pipeline-19-11-2305](ajm-contornado-e-pipeline-19-11-2305/run.md) | 19-11 2305 | entry-realgnm-draw | no (pipeline reject) | — | 300 MiB (startup) | no | passou do Ajm; Dozen recusou vs 4f38cbc0 / fs b1032a3f |
 | [primeiro-entry-com-draw-19-11-2249](primeiro-entry-com-draw-19-11-2249/run.md) | 19-11 2249 | entry-realgnm-draw | no (M3 FAILED) | — | 317 MiB | no | Prepared image missing; stage mode is the next step |
 | [primeiro-build-depois-da-perda-19-11-2230](primeiro-build-depois-da-perda-19-11-2230/run.md) | 19-11 2230 | none | no (M2 READY) | — | 332 MiB | no | recovered tree builds, installs and presents |
+
 
 
 
