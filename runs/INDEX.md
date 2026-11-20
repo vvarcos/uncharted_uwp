@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [patch-de-shader-sem-marcador-20-11-1458](patch-de-shader-sem-marcador-20-11-1458/run.md) | 20-11 1458 | entry-unresolved | no | — | — | device lost | patch experiment blind: no marker in loader.log |
 | [laco-de-luz-limitado-por-buffer-20-11-1448](laco-de-luz-limitado-por-buffer-20-11-1448/run.md) | 20-11 1448 | entry-unresolved | no | — | — | device lost | last PS before the hang loops over a light count read from a buffer |
 | [shader-do-jogo-copia-e-ainda-trava-20-11-1441](shader-do-jogo-copia-e-ainda-trava-20-11-1441/run.md) | 20-11 1441 | entry-unresolved | no | — | — | device lost | guest shader copies, no host copy, same hang |
 | [gravacao-na-thread-chamadora-tambem-cai-20-11-1437](gravacao-na-thread-chamadora-tambem-cai-20-11-1437/run.md) | 20-11 1437 | entry-unresolved | no | — | — | device lost | not a recording-order race |
@@ -55,4 +56,5 @@ Newest first.
 | [gravacao-na-thread-chamadora-tambem-cai-20-11-1437](gravacao-na-thread-chamadora-tambem-cai-20-11-1437/run.md) | 20-11 1437 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [shader-do-jogo-copia-e-ainda-trava-20-11-1441](shader-do-jogo-copia-e-ainda-trava-20-11-1441/run.md) | 20-11 1441 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [laco-de-luz-limitado-por-buffer-20-11-1448](laco-de-luz-limitado-por-buffer-20-11-1448/run.md) | 20-11 1448 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [patch-de-shader-sem-marcador-20-11-1458](patch-de-shader-sem-marcador-20-11-1458/run.md) | 20-11 1458 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 

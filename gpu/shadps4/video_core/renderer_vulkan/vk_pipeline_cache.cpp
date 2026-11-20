@@ -1232,6 +1232,17 @@ vk::ShaderModule PipelineCache::CompileModule(Shader::Info& info, Shader::Runtim
 
     auto patch = GetShaderPatch(info.pgm_hash, info.hw_stage, perm_idx, "spv");
     const bool is_patched = patch && EmulatorSettings.IsPatchShaders();
+#ifdef UNCHARTED_UWP
+    // bbport: patch loading is silent at INFO level, which loader.log does not keep; print the
+    // decision so a run says whether the patched program was really used.
+    if (EmulatorSettings.IsPatchShaders()) {
+        std::printf("M5 shader patch: %s %s hash=%08x perm=%zu\n",
+                    GetShaderName(info.hw_stage, info.pgm_hash, perm_idx).c_str(),
+                    patch ? (is_patched ? "applied" : "found-but-off") : "missing",
+                    u32(info.pgm_hash), perm_idx);
+        std::fflush(stdout);
+    }
+#endif
     if (is_patched) {
         LOG_INFO(Loader, "Loaded patch for {} shader {:#x}", info.hw_stage, info.pgm_hash);
         module = CompileSPV(*patch, instance.GetDevice());

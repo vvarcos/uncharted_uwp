@@ -3582,6 +3582,14 @@ void Rasterizer::BindBuffers(const Shader::Info& stage, const PreparedStage* pre
                     for (u32 w = 0; w < 15; ++w) {
                         std::printf(" %08x", words[w]);
                     }
+                    // bbport: the deferred-lighting shader reads its light count from dword 72 of
+                    // this buffer; print that window too so one run says whether the count is sane.
+                    if (memory->IsValidGpuMapping(v.base_address + 288, 32)) {
+                        std::printf(" | +288:");
+                        for (u32 w = 72; w < 80; ++w) {
+                            std::printf(" %08x", words[w]);
+                        }
+                    }
                 }
                 std::printf("\n");
             }
