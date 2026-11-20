@@ -1,88 +1,49 @@
-# Run pin-de-arena-no-carregamento-20-11-0121 — pin de arena no carregamento
+# Run pin-de-arena-no-carregamento-20-11-0121 — the pin build never got a clean run
 
 Folder: `runs/pin-de-arena-no-carregamento-20-11-0121/` — screenshots of this run go to `captures/` beside this file.
 
 | Field | Value |
 | --- | --- |
-| Date | 2026-11-20 01:21 |
-| Commit | 5ec5c27 |
-| Package | 1.0.26324.420+ |
-| Build stamp | not measured |
-| Run mode (`run.txt` line 1) | entry-unresolved |
+| Date | 2026-11-20 01:21 (local) |
+| Commit | uncommitted at the time; landed as `1f4b94f` |
+| Package | `1.0.26324.420` and `1.0.26324.421` both installed |
+| Run mode | `entry-unresolved` |
 | Switches | none |
-| Dump / patch | not recorded |
 
 ## Intent
 
-One sentence: what this run is supposed to prove or disprove.
-
-## Setup
-
-- Console and profile: not recorded
-- Cleaned `LocalState/raw.log` before the run: yes / no
-- Scripted input (`pad.txt`): not used
-- Duration target: not set
+Check whether pinning an arena while a descriptor write holds its handle removes the level-load
+access violation (`M5 bound buffer destroyed` → `M5 av-scan: addr=0x10`).
 
 ## Timeline
 
 | Time | Event |
 | --- | --- |
-|  |  |
-
-## Telemetry
-
-| Metric | Value |
-| --- | --- |
-| Duration | not measured |
-| Presented frames | not measured |
-| Mean FPS | not measured |
-| Frame time (mean / p95) | not measured |
-| RAM current / peak | not measured / not measured |
-| Graphics pipelines compiled | not measured |
-| Compute pipelines compiled | not measured |
-| Arena window replacements | not measured |
-| `scheduler.Finish()` calls | not measured |
-| QUAD_LIST draws / indices expanded | not measured |
+| 01:21 | 421 installed over 420; the launcher resolved the first match, 420 |
+| 01:21 | launch "accepted but not observed running"; every later command failed with "App selection must match exactly one installed package" |
+| 01:22 | the pulled log was the previous run's (same 19 559 464 bytes, same AV) |
 
 ## Reached gameplay?
 
-- Verdict: **no / menu / movie / static scene / gameplay**
-- Evidence: not recorded
+- Verdict: **no run** — the app never started under the intended package.
 
 ## Failures
 
 | Kind | Detail |
 | --- | --- |
-| Device loss | none |
-| HRESULT | none |
-| Assert | none |
-| Access violation | none |
-| Last scheduler tick | not recorded |
-
-## Visual symptoms
-
-- none observed / describe: missing characters, exploding vertices, black triangle, wrong
-  colours, ...
-
-## Captures
-
-| File | Scene | What it shows |
-| --- | --- | --- |
-|  |  |  |
-
-## Logs
-
-Paths only; the logs themselves stay private.
-
-- `LocalState/loader.log`:
-- `LocalState/raw.log`:
-- `LocalState/errors.log`:
+| Procedure | two versions installed; `-App` matched both; no launch |
+| Real crash | the old log still shows the AV; it says nothing about the pin build |
 
 ## Conclusion
 
-What the run proves, and what it does not.
+Nothing was measured. The lesson is procedural and now enforced by hand: after installing, remove
+every other version and resolve the package name **from the console**, not from a file name — the
+`_x64_x64_` failure earlier came from building the name by hand.
+
+`1.0.26324.426` (commit `1f4b94f`) is the build that carries the pin change together with the
+controller fix, and it is the only package installed.
 
 ## Next single action
 
-One action, not a list.
-
+Run the New Game path on 426 with the pad script and check the log for `M5 bound buffer destroyed`
+and `M5 av-scan`: absent means the pin works.

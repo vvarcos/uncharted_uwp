@@ -16,6 +16,9 @@ controller keeps working.
 param(
     [Parameter(Position = 0)][string[]]$Tokens = @(),
     [double]$Hold = 0.35,
+    # Sticks are deliberately opt-in: a held axis can leave the character walking after the
+    # agent stops. The D-pad is discrete and safe.
+    [switch]$Stick,
     [string]$Console = 'series-s',
     [string]$App = '',
     [switch]$Json
@@ -39,6 +42,9 @@ $temp = Join-Path $root '.local/pad-inject.txt'
 $upload = Join-Path $PSScriptRoot 'xbox-upload.ps1'
 try {
     $text = ($Tokens -join ' ').Trim()
+    if (-not $Stick -and $text -match '(^|\s)[lr][xy]=') {
+        throw 'Stick tokens are disabled; use the D-pad (up/down/left/right) or pass -Stick.'
+    }
     if ($text -and $text -ne 'clear') {
         [IO.File]::WriteAllText($temp, $text, [Text.ASCIIEncoding]::new())
         & $upload -Console $Console -App $App -File $temp -RemotePath 'LocalState/pad.txt' -Overwrite | Out-Null
