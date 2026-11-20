@@ -11,7 +11,7 @@ out of it. Every entry below corresponds to console evidence; nothing here is a 
 | M2 | Sparse/demand guest memory and the game's own entry point | **done** |
 | M3 | Guest runtime services and memory contract on console | **done** |
 | M4 | Connected renderer: movies, 3D menu, first real frames | **done** |
-| M5 | Gameplay: 24 pipelines, three arenas, 600 s, peak < 5000 MiB | **met on console; copy path still bypassed** |
+| M5 | Gameplay: 24 pipelines, three arenas, 600 s, peak < 5000 MiB | **open**: the 600 s result was a menu; gameplay is 3–4 FPS and the composite draw loses the device |
 | M6 | Uncharted 2 and 3 | not started |
 
 M5 is judged as a whole. A real frame, the menu or a finished level load is progress, never a
@@ -116,22 +116,29 @@ assert. A later seed measured `Pipeline cache: preloaded 133 of 134 pipelines` (
 1.5 s) reading 524 files; the one key left out is a deliberate focus-fix shader (`why=6`), not a
 corrupt entry. The game path then reuses that cache instead of compiling.
 
-### The HUD and the 600 s gate
+### The HUD and the 600 s presentation runs
 
 The UWP build used to leave the overlay inert because the desktop menu needs SDL and Dear ImGui.
-It now draws two lines straight into the swapchain image the presenter already leaves in
+It now draws four lines straight into the swapchain image the presenter already leaves in
 `ColorAttachmentOptimal`: one dynamic-rendering pass, one pipeline, one atlas baked once from the
-embedded font and one host-visible vertex buffer per image. Cost is 75 KiB and there is no
-per-frame allocation. On console the capture reads `RAM 3229/3486/5120 MiB` and
-`39.9 FPS 25.08 ms`.
+embedded font and one host-visible vertex buffer per image (24 KiB each, about 135 KiB with three
+images) and there is no per-frame allocation. On console the capture reads
+`RAM 3229/3486/5120 MiB` and `39.9 FPS 25.08 ms`. The extra lines carry the phase 1 counters —
+`scheduler.Finish()` calls and cost, arena replacements, QUAD_LIST draws and expanded indices — so a
+screenshot of the game carries the measurement.
 
 The peak shown there is not a 2 Hz sample: `AppMemoryUsage` is now read on every present and the
 running maximum is kept, so the number is authoritative for the ceiling.
 
-Three independent runs then held gameplay for over 600 s each (41 774 / 38 037 / 37 603 frames)
-with peaks of 3888 / 3897 / 3837 MiB — more than 1200 MiB of headroom — and no assert, STOP,
-`DEVICE_HUNG` or access violation. One run compiled 31 graphics and 17 compute pipelines on
-demand, over the 24 required.
+Three independent runs then **presented** for over 600 s each (41 774 / 38 037 / 37 603 frames) with
+peaks of 3888 / 3897 / 3837 MiB — more than 1200 MiB of headroom — and no assert, STOP,
+`DEVICE_HUNG` or access violation. One run compiled 31 graphics and 17 compute pipelines on demand.
+
+The frame counts correct that claim: 41 774 frames in 600 s is 60 Hz, and gameplay has never been
+measured above 3–4 FPS. At that rate 600 s would be about 2 100 frames. The runs prove a menu, or a
+static first scene, being presented at 60 Hz — not gameplay. They stay in this history as
+presentation evidence only; the M5 gate is **open**. The only gameplay figures are 3–4 FPS at
+4 411 MiB, from one manual Continue capture, with characters disappearing and vertices exploding.
 
 Two memory faults were fixed on the way. `GetArena` published only whole 512 MiB pages, so a
 demand-sized arena smaller than a page left pointers to a destroyed buffer and repeated the same

@@ -3,16 +3,22 @@
 Ordered by how much they block the port. Everything here is reproduced on console; desktop
 results are not listed as issues.
 
-## 1. The M5 gate is met, rendering correctness is not
+## 1. The M5 gate is open: gameplay runs at 3–4 FPS
 
-**Status:** gate closed on console; correctness open.
+**Status:** open. Every "600 s" result in this repository is a menu.
 
-Three independent runs held gameplay for over 600 s (41 774 / 38 037 / 37 603 frames) with peaks of
-3888 / 3897 / 3837 MiB against the 5120 MiB ceiling, no assert, STOP, `DEVICE_HUNG` or access
-violation, and one of them compiled 31 graphics plus 17 compute pipelines on demand. The three
-512 MiB arenas are unchanged. What remains is that those runs depend on item 2: the colour/depth
-copies are skipped, so the frame is approximate. "Gate met" here never means "the picture is
-correct".
+Three runs presented for over 600 s each (41 774 / 38 037 / 37 603 frames) with peaks of
+3888 / 3897 / 3837 MiB. 41 774 frames over ~696 s is 60 Hz; gameplay has never been measured above
+3–4 FPS, at which rate 600 s would be about 2 100 frames. Those runs therefore prove a menu — or a
+static first scene — being presented, not gameplay, and they do not close the gate.
+
+The only gameplay figures on record are one manual Continue capture (`.1415`): **3–4 FPS**,
+4 411 MiB, magenta/cyan materials, black geometry, characters disappearing and vertices exploding
+across the screen. Those defects have not been isolated.
+
+What is still true from those runs: the three 512 MiB arenas are unchanged, no assert or lost device
+occurred while presenting, and one run compiled 31 graphics plus 17 compute pipelines on demand.
+"Gate met" here never means "the picture is correct", and it no longer means "gameplay ran".
 
 ## 2. `DXGI_ERROR_DEVICE_HUNG` on the colour/depth copy path
 

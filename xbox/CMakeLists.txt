@@ -36,7 +36,7 @@ set(UNCHARTED_UWP_SOURCES
   runtime runtime_audio runtime_content runtime_display runtime_fiber runtime_file
   runtime_kernel runtime_memory runtime_mutex runtime_rtc runtime_rwlock runtime_savedata
   runtime_sema runtime_services runtime_thread runtime_time runtime_trophy
-  compat_win cpu_patch red_zone probe)
+  prepare_boot compat_win cpu_patch red_zone probe)
 list(TRANSFORM UNCHARTED_UWP_SOURCES PREPEND "${UNCHARTED_ROOT}/src/")
 list(TRANSFORM UNCHARTED_UWP_SOURCES APPEND ".c")
 

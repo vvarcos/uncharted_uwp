@@ -164,7 +164,10 @@ GraphicsPipeline::GraphicsPipeline(
         .pVertexAttributeDescriptions = sdata.vertex_attributes.data(),
     };
 
-    const bool no_aux_tess = NoAuxTess();
+    // Dozen on the console exposes no tessellation shaders, so the synthesised TCS/TES pair is
+    // rejected with a generic OutOfHostMemory. Default to the plain triangle-list emulation when
+    // the device cannot run tessellation; BB_NO_AUX_TESS still forces it on a capable device.
+    const bool no_aux_tess = NoAuxTess() || instance.IsTessellationSupported() == false;
     const bool is_rect_list = !no_aux_tess && key.prim_type == AmdGpu::PrimitiveType::RectList;
     const bool is_quad_list = !no_aux_tess && key.prim_type == AmdGpu::PrimitiveType::QuadList;
     // With the emulation off the topology must be drawable without tessellation stages.

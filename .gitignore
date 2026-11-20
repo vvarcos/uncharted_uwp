@@ -11,6 +11,8 @@
 /screenshots/
 /covers/
 /evidence/
+# Run journal screenshots contain game imagery and are never committed.
+/runs/*/captures/
 **/AppPackages/
 *.log
 *.trace

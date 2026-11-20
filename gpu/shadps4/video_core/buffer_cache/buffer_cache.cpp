@@ -20,6 +20,7 @@ extern "C" void bb_log_raw(const char* text);
 #endif
 #include "bbport_copy.h"
 #include "bbport_toggles.h"
+#include "common/bbport_counters.h"
 #include "common/thread.h"
 #include "video_core/landing_gate.h"
 #include "common/alignment.h"
@@ -1584,7 +1585,12 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
     };
     if (!sparse_supported && first_page == last_page && ArenaDemandSizing()) {
         if (first_arena && !covers(first_arena, need_start, need_end)) {
+            // bbport: this drain runs on every arena replacement, and gameplay replaces windows
+            // constantly, so its cost is measured per frame by the UWP HUD (GOAL.md phase 1).
+            const auto finish_start = std::chrono::steady_clock::now();
             scheduler.Finish();
+            BbPort::Counters::NoteSchedulerFinish(std::chrono::steady_clock::now() - finish_start);
+            BbPort::Counters::NoteArenaReplacement();
             /* BB_ARENA_KEEP=1 (diagnosis): leave the replaced handle alive instead of freeing it. If
              * the Dozen fast-fail on the present submit disappears with this flag, a descriptor or a
              * landing still referenced the freed handle. */

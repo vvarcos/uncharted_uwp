@@ -28,7 +28,8 @@ The buffer/cache arena alone is 1024 MiB of that budget. Planning a change that 
 | Buffer-cache arena (resident) | 1024 MiB |
 | Steady guest with demand arenas, no STOP, ~5 min | ~2650 MiB |
 | Level load running with the copy path active | up to ~5056 MiB peak (pre-fix failure case) |
-| Gameplay >600 s, copies bypassed, after the arena fixes | 3837–3897 MiB peak |
+| Gameplay >600 s, copies bypassed, after the arena fixes | 3837–3897 MiB peak (menu; not gameplay) |
+| Real gameplay, manual Continue, copies skipped (`.1415`) | 4 411 MiB in one capture, 3–4 FPS |
 
 Those are different runs on purpose: the boot/renderer numbers explain fixed cost, the steady
 number shows the demand-allocated base, and the ceiling number is the failure case described in

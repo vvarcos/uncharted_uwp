@@ -65,7 +65,7 @@ namespace {
  * because that is the resolver the guest loader actually queries; this copy is filled by the PC
  * entry point (bbgpu_init below) and has no reader on UWP, so it is not even compiled there.
  * Keeping both alive was what made the real GNM implementations invisible to the loader. */
-#if !defined(UNCHARTED_UWP) || !defined(UNCHARTED_M5_VIDEO_CONTRACT)
+#if !defined(UNCHARTED_UWP)
 struct Symbol {
     std::string nid, library, module;
     u64 address;
@@ -76,8 +76,8 @@ u32 g_sdk_version;
 } // namespace
 
 namespace Core::Loader {
-// On UWP the M5 kernel bridge provides this resolver hook.
-#if !defined(UNCHARTED_UWP) || !defined(UNCHARTED_M5_VIDEO_CONTRACT)
+// The console's single resolver lives in uwp_kernel_bridge.cpp; this copy is desktop-only.
+#if !defined(UNCHARTED_UWP)
 void SymbolsResolver::AddSymbol(const char* nid, const char* library, const char* module, SymbolType,
                                 u64 address) {
     g_symbols.push_back({nid, library, module, address});
@@ -383,10 +383,10 @@ extern "C" unsigned bbgpu_symbol_count(void) {
 #endif // !UNCHARTED_UWP
 
 // Kernel service thread: runs boost::asio timers for equeue timer events.
-// On UWP the M5 kernel bridge owns the io_context and KernelSignalRequest, so this copy is
-// only compiled when that bridge is not part of the build.
+// On UWP the kernel bridge (uwp_kernel_bridge.cpp) owns the io_context, KernelSignalRequest and
+// __Error, with or without the M5 contract, so this copy is desktop-only.
 namespace Libraries::Kernel {
-#if !defined(UNCHARTED_UWP) || !defined(UNCHARTED_M5_VIDEO_CONTRACT)
+#if !defined(UNCHARTED_UWP)
 boost::asio::io_context io_context;
 static std::mutex m_asio_req;
 static std::condition_variable_any cv_asio_req;
@@ -416,9 +416,9 @@ static void KernelServiceThread(std::stop_token stoken) {
 void StartKernelService() {
     service_thread = std::jthread{KernelServiceThread};
 }
-#endif // !UNCHARTED_UWP || !UNCHARTED_M5_VIDEO_CONTRACT
+#endif // !UNCHARTED_UWP
 
-#if !defined(UNCHARTED_UWP) || !defined(UNCHARTED_M5_VIDEO_CONTRACT)
+#if !defined(UNCHARTED_UWP)
 int* PS4_SYSV_ABI __Error() {
     return runtime_errno();
 }

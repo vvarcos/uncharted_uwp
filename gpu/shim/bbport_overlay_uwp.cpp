@@ -16,6 +16,7 @@
 #include <winrt/Windows.System.h>
 
 #include "bbport_overlay.h"
+#include "common/bbport_counters.h"
 
 // vk_mem_alloc.h pulls the C vulkan.h first; including it after vk_common.h (which brings the
 // Vulkan-Hpp headers this target uses) keeps a single, matching header set.
@@ -43,6 +44,7 @@ u64 memory_current_mib{};
 u64 memory_limit_mib{};
 u64 present_count{};
 bool hud_enabled{true};
+BbPort::Counters::Frame frame_counters{};
 
 // ---------------------------------------------------------------------------------------------
 // HUD resources. Everything is created once in Init; Render only rewrites the mapped vertices.
@@ -58,7 +60,8 @@ constexpr u32 PadX = 2;      // left margin inside a cell, absorbs negative bear
 constexpr u32 Baseline = 22; // baseline row inside a cell
 constexpr float FontPixelHeight = 21.0f;
 constexpr u32 MaxCharsPerLine = 32;
-constexpr u32 MaxGlyphs = MaxCharsPerLine * 2;
+constexpr u32 MaxLines = 4;
+constexpr u32 MaxGlyphs = MaxCharsPerLine * MaxLines;
 constexpr u32 VerticesPerGlyph = 6;
 constexpr u32 MaxVertices = MaxGlyphs * VerticesPerGlyph;
 constexpr u32 MaxImageSlots = 8;
@@ -575,6 +578,18 @@ u32 SlotForView(vk::ImageView view) {
     return slot;
 }
 
+/// Keeps a formatted line inside its 32-cell budget. `EmitText` stops at the total vertex
+/// capacity, so an overlong line would silently push the next one out of the buffer.
+void ClampLine(char* line, size_t size) {
+    if (size == 0) {
+        return;
+    }
+    const size_t limit = std::min<size_t>(MaxCharsPerLine, size - 1);
+    if (std::strlen(line) > limit) {
+        line[limit] = '\0';
+    }
+}
+
 /// Appends the quads of `text` to `out` (capacity `MaxVertices`), returning the vertex count.
 u32 EmitText(const char* text, float pen_x, float baseline, const float color[4],
              vk::Extent2D extent, HudVertex* out, u32 count) {
@@ -659,19 +674,40 @@ void Render(vk::CommandBuffer cmdbuf, vk::ImageView view, vk::Extent2D extent) {
 
     char ram_line[96];
     char rate_line[96];
+    char trace_line[96];
+    char quad_line[96];
     std::snprintf(ram_line, sizeof(ram_line), "RAM %llu/%llu/%llu MiB",
                   static_cast<unsigned long long>(memory_current_mib),
                   static_cast<unsigned long long>(memory_peak_mib),
                   static_cast<unsigned long long>(memory_limit_mib));
     const double fps = frame_ms_avg > 0.0 ? 1000.0 / frame_ms_avg : 0.0;
     std::snprintf(rate_line, sizeof(rate_line), "%.1f FPS %.2f ms", fps, frame_ms_avg);
+    // GOAL.md phase 1: the three suspected costs of a gameplay frame, measured per present.
+    // Integer milliseconds keep the line inside its 32-cell budget; a frame is 250-330 ms today.
+    std::snprintf(trace_line, sizeof(trace_line), "FIN %llu %llums ARENA %llu",
+                  static_cast<unsigned long long>(frame_counters.scheduler_finishes),
+                  static_cast<unsigned long long>(frame_counters.scheduler_finish_us / 1000),
+                  static_cast<unsigned long long>(frame_counters.arena_replacements));
+    std::snprintf(quad_line, sizeof(quad_line), "QUAD %llu idx %llu",
+                  static_cast<unsigned long long>(frame_counters.quad_draws),
+                  static_cast<unsigned long long>(frame_counters.quad_indices));
+    ClampLine(ram_line, sizeof(ram_line));
+    ClampLine(rate_line, sizeof(rate_line));
+    ClampLine(trace_line, sizeof(trace_line));
+    ClampLine(quad_line, sizeof(quad_line));
 
     constexpr float ram_color[4]{1.0f, 1.0f, 1.0f, 1.0f};
     constexpr float rate_color[4]{0.70f, 1.0f, 0.75f, 1.0f};
+    constexpr float trace_color[4]{1.0f, 0.85f, 0.55f, 1.0f};
+    constexpr float quad_color[4]{0.70f, 0.85f, 1.0f, 1.0f};
     const float first_baseline = MarginPx + static_cast<float>(Baseline);
     u32 count = EmitText(ram_line, MarginPx, first_baseline, ram_color, extent, vertices, 0);
     count = EmitText(rate_line, MarginPx, first_baseline + LineSpacingPx, rate_color, extent,
                      vertices, count);
+    count = EmitText(trace_line, MarginPx, first_baseline + LineSpacingPx * 2.0f, trace_color,
+                     extent, vertices, count);
+    count = EmitText(quad_line, MarginPx, first_baseline + LineSpacingPx * 3.0f, quad_color,
+                     extent, vertices, count);
     if (count == 0) {
         return;
     }
@@ -728,6 +764,7 @@ void NotePresent() {
     }
     last_present = now;
     ++present_count;
+    frame_counters = BbPort::Counters::TakeFrame();
     // The 5120 MiB ceiling is enforced per allocation, so the peak must not be missed between
     // log lines. Read AppMemoryUsage every present (a cheap property read) and keep the running
     // maximum; only formatting/printing stays limited to twice per second.
@@ -744,11 +781,17 @@ void NotePresent() {
     try {
         memory_limit_mib = winrt::Windows::System::MemoryManager::AppMemoryUsageLimit() >> 20;
         const double fps = frame_ms_avg > 0.0 ? 1000.0 / frame_ms_avg : 0.0;
-        std::printf("HUD: %.1f FPS %.2f ms RAM %llu/%llu/%llu MiB frames=%llu\n", fps,
-                    frame_ms_avg, static_cast<unsigned long long>(memory_current_mib),
+        std::printf("HUD: %.1f FPS %.2f ms RAM %llu/%llu/%llu MiB frames=%llu "
+                    "fin=%llu fin_ms=%.1f arena=%llu quad=%llu qidx=%llu\n",
+                    fps, frame_ms_avg, static_cast<unsigned long long>(memory_current_mib),
                     static_cast<unsigned long long>(memory_peak_mib),
                     static_cast<unsigned long long>(memory_limit_mib),
-                    static_cast<unsigned long long>(present_count));
+                    static_cast<unsigned long long>(present_count),
+                    static_cast<unsigned long long>(frame_counters.scheduler_finishes),
+                    static_cast<double>(frame_counters.scheduler_finish_us) / 1000.0,
+                    static_cast<unsigned long long>(frame_counters.arena_replacements),
+                    static_cast<unsigned long long>(frame_counters.quad_draws),
+                    static_cast<unsigned long long>(frame_counters.quad_indices));
         std::fflush(stdout);
     } catch (...) {
         // Telemetry must never take the renderer down.

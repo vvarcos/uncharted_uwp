@@ -11,6 +11,7 @@
 #include <xxhash.h>
 #include "video_core/renderer_vulkan/ui_composition.h"
 #include "bbport_toggles.h"
+#include "common/bbport_counters.h"
 #include "video_core/renderer_vulkan/vk_frame_capture.h"
 #include "common/debug.h"
 #include "core/debug_state.h"
@@ -3314,14 +3315,18 @@ void Rasterizer::ResolveIndexBuffer(u32 index_offset) {
             out[0] = g[1];
             out[1] = g[2];
             out[2] = g[0];
+            // Both triangles must keep the same winding as the tessellation path, or back-face
+            // culling drops the second one and leaves a wedge (loading coin, Bluepoint logo,
+            // gameplay composite). BL, TR, TL is the counter-clockwise partner of BL, BR, TL.
             out[3] = g[1];
-            out[4] = g[0];
-            out[5] = g[3];
+            out[4] = g[3];
+            out[5] = g[0];
         }
         auto& stream = buffer_cache.GetStreamBuffer();
         const u64 stream_offset = stream.Copy(indices.data(), expanded * sizeof(u32), 16);
         index_bind = {stream.Handle(), stream_offset, vk::IndexType::eUint32};
         quad_expanded_indices = expanded;
+        BbPort::Counters::NoteQuadExpansion(expanded);
         static std::atomic<u32> logged{0};
         if (logged.fetch_add(1, std::memory_order_relaxed) < 4) {
             char line[192];

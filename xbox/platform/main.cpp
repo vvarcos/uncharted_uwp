@@ -20,6 +20,8 @@
 #include <thread>
 #include <vector>
 
+#include "prepare_boot.h"
+
 extern "C" int uncharted_probe_main(int argc, char** argv);
 extern "C" FILE* uncharted_uwp_fopen(const char* path, const char* mode);
 extern "C" void runtime_memory_start_paging();
@@ -100,8 +102,41 @@ static bool is_dump(const std::string& folder) {
            readable(folder + "\\sce_sys\\param.sfo");
 }
 
+// TITLE_ID from the dump's param.sfo, so another region (for example CUSA02344) is not forced to
+// the serial this port was first built for. The content profile derives its title number from the
+// same value, so nothing else has to be region-specific.
+static std::string dump_title_id(const std::string& folder) {
+    std::ifstream file(folder + "\\sce_sys\\param.sfo", std::ios::binary);
+    if (!file) return {};
+    const std::vector<unsigned char> data{std::istreambuf_iterator<char>(file),
+                                          std::istreambuf_iterator<char>()};
+    if (data.size() < 20 || std::memcmp(data.data(), "\0PSF", 4) != 0) return {};
+    const auto rd32 = [&data](size_t at) {
+        return unsigned(data[at]) | (unsigned(data[at + 1]) << 8) | (unsigned(data[at + 2]) << 16) |
+               (unsigned(data[at + 3]) << 24);
+    };
+    const unsigned keys = rd32(8), values = rd32(12), count = rd32(16);
+    for (unsigned i = 0; i < count; ++i) {
+        const size_t at = 20 + size_t(i) * 16;
+        if (at + 16 > data.size()) break;
+        const unsigned key = unsigned(data[at]) | (unsigned(data[at + 1]) << 8);
+        const unsigned size = rd32(at + 4), offset = rd32(at + 12);
+        if (size_t(keys) + key >= data.size() || size_t(values) + offset + size > data.size()) {
+            continue;
+        }
+        if (std::strncmp(reinterpret_cast<const char*>(data.data() + keys + key), "TITLE_ID",
+                         8) == 0) {
+            std::string id(reinterpret_cast<const char*>(data.data() + values + offset), size);
+            while (!id.empty() && id.back() == '\0') id.pop_back();
+            return id;
+        }
+    }
+    return {};
+}
+
 static std::string find_dump() {
-    const char* names[] = {"Uncharted", "NathanDrakeCollection", "UnchartedNDC", "CUSA02343", "CUSA02320"};
+    const char* names[] = {"Uncharted", "NathanDrakeCollection", "UnchartedNDC", "CUSA02343",
+                           "CUSA02320", "CUSA02344"};
     for (char drive : {'E', 'F', 'G', 'H'}) {
         for (const char* name : names) {
             std::string folder = std::string(1, drive) + ":\\dumps\\" + name;
@@ -635,7 +670,8 @@ static void loader() {
     const std::string user = local_utf8 + "\\user";
     CreateDirectoryW(winrt::to_hstring(user).c_str(), nullptr);
     _putenv_s("BB_GPU_USER_DIR", user.c_str());
-    _putenv_s("BB_GAME_SERIAL", "CUSA02320");
+    const std::string serial = dump.empty() ? std::string{} : dump_title_id(dump);
+    _putenv_s("BB_GAME_SERIAL", serial.empty() ? "CUSA02320" : serial.c_str());
     _putenv_s("BB_UWP_SWAP_FILE", (local_utf8 + "\\uncharted-swap.bin").c_str());
 #ifdef UNCHARTED_M5_HEADLESS_DEVICE
     // Diagnostic boot: no pipeline preload thread and no shader database, so the renderer
@@ -817,6 +853,24 @@ static void loader() {
                         static_cast<unsigned long long>(boot_ok ? boot_data.nFileSizeLow : 0),
                         content_ok ? "present" : "MISSING",
                         static_cast<unsigned long long>(content_ok ? content_data.nFileSizeLow : 0));
+            std::fflush(stdout);
+        }
+        if (!readable(boot) || !readable(content)) {
+            // No prepared image: build it on the console from the dump, so installing the package
+            // and pointing at E:\ is enough. Same bytes the PC pipeline produces.
+            std::puts("M3: prepared image missing; preparing from the dump on the console");
+            char prepare_error[256] = {};
+            const int prepared = bb_prepare_boot(dump.c_str(), local_utf8.c_str(), prepare_error,
+                                                 sizeof(prepare_error));
+            if (prepared != 0) {
+                std::printf("M3 prepare FAILED: %s\n", prepare_error);
+            } else {
+                boot = local_utf8 + "\\boot-linked.bin";
+                content = local_utf8 + "\\content.bin";
+                trophies = local_utf8 + "\\trophies";
+                CreateDirectoryW(winrt::to_hstring(trophies).c_str(), nullptr);
+                std::puts("M3: prepared image written to LocalState (flat layout)");
+            }
             std::fflush(stdout);
         }
         if (!readable(boot) || !readable(content)) {

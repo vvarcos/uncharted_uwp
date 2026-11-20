@@ -42,7 +42,8 @@ Fencing every command only after the seventh copy completed showed the earlier w
 With that one fragment shader skipped, and the colour/depth copies still **active**:
 
 - seven copy fences per frame completed with no stall;
-- the scene rendered with correct colours for 5838 frames at roughly 35-57 FPS;
+- the scene rendered with correct colours for 5838 frames at roughly 35-57 FPS (a rate never
+  observed in gameplay, so this was a menu or static scene, not gameplay);
 - sampled RAM stayed near 3711-3755 MiB of the 5120 MiB ceiling;
 - the log contained no `device was lost`, no GPU stall and no new access violation.
 

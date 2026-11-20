@@ -32,10 +32,13 @@ assets**. You need your own decrypted dump of the collection.
 - With the colour/depth copy path bypassed (diagnostic mode only) the first scene renders at
   720p and the process survives several minutes of presentation.
 - Long presentation runs recorded sampled maxima of 3837–3897 MiB against the 5120 MiB ceiling,
-  with 31 graphics and 17 compute pipelines compiled on demand in one run. These observations
-  do not prove 600 seconds of interactive gameplay or successful level loading.
-- The console HUD draws RAM usage and FPS/frame time over the game. Memory is queried every
-  present; its running maximum is still sampled and is not an OS-guaranteed lifetime peak.
+  with 31 graphics and 17 compute pipelines compiled on demand in one run. Those runs presented a
+  menu at 60 Hz (41 774 frames over ~696 s); real gameplay measures **3–4 FPS** at about
+  4 411 MiB, with characters disappearing and vertices exploding. No run has yet shown 600 seconds
+  of interactive gameplay or a completed level load.
+- The console HUD draws RAM usage, FPS/frame time, the per-frame `scheduler.Finish()` cost, arena
+  replacements and QUAD_LIST expansion counts over the game. Memory is queried every present; its
+  running maximum is still sampled and is not an OS-guaranteed lifetime peak.
 - Button prompts stay the dump's PlayStation glyphs instead of being replaced with PC keys.
 
 ## What does not work yet
@@ -108,6 +111,8 @@ Full details, including the signing key you must generate yourself, are in [BUIL
 
 ## Documentation
 
+- [GOAL](GOAL.md) — the tracked goal after M5: phases, acceptance criteria, current truth.
+- [Runs](runs/README.md) — one entry per console run, with telemetry and screenshots.
 - [BUILD](BUILD.md) — toolchain, dependencies, packaging, signing, deployment.
 - [ARCHITECTURE](ARCHITECTURE.md) — how the loader, renderer, graphics bridge and host fit together.
 - [MEMORY](MEMORY.md) — the 5120 MiB ceiling, the three arenas and how memory is measured.
