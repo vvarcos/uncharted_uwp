@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [qualquer-copia-derruba-20-11-1343](qualquer-copia-derruba-20-11-1343/run.md) | 20-11 1343 | entry-unresolved | no | — | — | **device lost** | any submitted copy kills the device |
 | [render-copy-tambem-stall-20-11-1311](render-copy-tambem-stall-20-11-1311/run.md) | 20-11 1311 | entry-unresolved | no | — | — | GPU stall | render backend works; stall is on the use of the copied images |
 | [modo-2-tambem-cai-20-11-1248](modo-2-tambem-cai-20-11-1248/run.md) | 20-11 1248 | entry-unresolved | no | 13.6 (coin) | — | app exited 18 s | same-format copies also fail |
 | [copias-sem-staging-tambem-cai-20-11-1244](copias-sem-staging-tambem-cai-20-11-1244/run.md) | 20-11 1244 | entry-unresolved | no | 13.6 (coin) | 3 821 MiB | app exited 18 s | staging not the blocker |
@@ -39,4 +40,5 @@ Newest first.
 | [copias-sem-staging-tambem-cai-20-11-1244](copias-sem-staging-tambem-cai-20-11-1244/run.md) | 20-11 1244 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [modo-2-tambem-cai-20-11-1248](modo-2-tambem-cai-20-11-1248/run.md) | 20-11 1248 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [render-copy-tambem-stall-20-11-1311](render-copy-tambem-stall-20-11-1311/run.md) | 20-11 1311 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [qualquer-copia-derruba-20-11-1343](qualquer-copia-derruba-20-11-1343/run.md) | 20-11 1343 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
