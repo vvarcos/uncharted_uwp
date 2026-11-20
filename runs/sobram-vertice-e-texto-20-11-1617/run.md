@@ -1,12 +1,28 @@
 # Run sobram-vertice-e-texto-20-11-1617 — the two visual defects left, from the user's screen
 
 Folder: `runs/sobram-vertice-e-texto-20-11-1617/` — the user's capture is described here (not stored: it
-was sent as a picture, and it must be saved to `captures/` on the next occurrence).
+was sent as a picture). The stable run of the same day is stored as
+`captures/01-cores-corretas-texto-duplo-175s.png` and `captures/02-cores-corretas-170s.png`.
+
+## Stable run at 19:18 (same package, copies skipped, watched to the end)
+
+**The colours are correct.** The capture shows the boat deck with crates, Drake and Sully, the sea and
+the ships on the horizon in plausible colour, `3.6 FPS 280.16 ms`, RAM `4459/4599/5120 MiB`, and the
+app survived the whole 3-minute watch (33 frames).
+
+That also means the magenta earlier in the day is **not** a standing defect: the scene was magenta with
+the very same package in `runs/barreiras-sem-copia-jogo-roda-20-11-1515/` (that run additionally forced
+transfer barriers). The console rebooted in between, and the runs that forced `BB_PIPELINE_CACHE=0`
+regenerated the translated/pipeline cache — the most likely explanation for the change, to be confirmed
+by deleting the cache deliberately on a future run.
+
+What the same capture does show clearly is the **doubled prompt strip**: several button glyphs and two
+overlapping copies of the sentence (`Press ⓧ … for the … combo`), one on top of the other.
 
 | Field | Value |
 | --- | --- |
 | Date | 2026-11-20 16:17 (local) |
-| Commit | `26f55c9` |
+| Commit | `09e7f69` |
 | Package | `UnchartedNDCUWP_1.0.26324.1809_x64__70t7zv47487b6` |
 | Run mode | `entry-unresolved` (copies skipped) |
 | Overlay | `3.4 FPS 294.53 ms`, `FIN 0`, `QUAD 34 idx 20 40`, RAM `4591/5120 MiB` |
