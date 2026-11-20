@@ -527,13 +527,16 @@ GraphicsPipeline::GraphicsPipeline(
         }
         std::snprintf(line, sizeof(line),
                       "M5 pso: %s colors=%d[%s] samples=%u depth=%s dsamples=%u stages=%u "
-                      "dynstates=%u static=%d gs=%d tess=%d dyn{vid=%d clip=%d provoking=%d "
+                      "dynstates=%u static=%d gs=%d tess=%d blend=%d "
+                      "dyn{vid=%d clip=%d provoking=%d "
                       "clipctl=%d bounds=%d cwm=%d sg64=%d mixds=%d logicop=%d eds3=%d}",
                       debug_str.c_str(), int(key.num_color_attachments), colors,
                       unsigned(color_samples[0]), vk::to_string(depth_format).c_str(),
                       unsigned(color_samples[0]), unsigned(shader_stages.size()),
                       unsigned(dynamic_states.size()), int(ForceStaticPso()),
-                      int(device_features.geometryShader), int(device_features.tessellationShader), int(features.IsVertexInputDynamicState()),
+                      int(device_features.geometryShader), int(device_features.tessellationShader),
+                      int(key.num_color_attachments ? key.blend_controls[0].enable : 0),
+                      int(features.IsVertexInputDynamicState()),
                       int(features.IsDepthClipEnableSupported()),
                       int(features.IsProvokingVertexSupported()),
                       int(features.IsDepthClipControlSupported()),

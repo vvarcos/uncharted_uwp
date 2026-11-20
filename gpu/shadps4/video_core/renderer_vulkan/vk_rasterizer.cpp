@@ -3310,7 +3310,18 @@ void Rasterizer::ResolveIndexBuffer(u32 index_offset) {
             }
         }
         std::vector<u32> indices(expanded);
+        // Read the guest indices through the buffer cache, not from raw memory: the cache owns the
+        // coherent copy, and a stale read here displaces one corner of the quad (the wedge on the
+        // loading coin, the Bluepoint logo and the gameplay composite).
+        buffer_cache.InvalidateMemory(index_address, index_buffer_size);
+        const auto [index_buffer, index_buffer_offset] =
+            buffer_cache.ObtainBuffer(index_address, index_buffer_size, false);
         const u8* src = reinterpret_cast<const u8*>(index_address);
+        if (index_buffer != nullptr && !index_buffer->mapped_data.empty() &&
+            index_buffer_offset + index_buffer_size <= index_buffer->mapped_data.size()) {
+            
+            src = index_buffer->mapped_data.data() + index_buffer_offset;
+        }
         for (u32 q = 0; q < quads; ++q) {
             u32 g[4];
             for (u32 k = 0; k < 4; ++k) {
