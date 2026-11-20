@@ -2920,7 +2920,19 @@ void Rasterizer::JoinBindHelper(void* context) {
 }
 
 bool Rasterizer::BindResources(const Pipeline* pipeline) {
-    if (IsComputeImageCopy(pipeline) || IsComputeMetaClear(pipeline) ||
+#ifdef UNCHARTED_UWP
+    // bbport: the guest's own copy shader (one workgroup per 256 copied bytes) is normally replaced
+    // by a host vkCmdCopyImage. Every host copy path hangs the GPU in Dozen (transfer, staging and a
+    // full-screen render alike), while the same work submitted by the guest's shader does not, so
+    // BB_NO_COPY_HLE=1 runs the guest shader instead of the replacement.
+    static const bool copy_hle = [] {
+        const char* env = std::getenv("BB_NO_COPY_HLE");
+        return env == nullptr || env[0] == '0';
+    }();
+#else
+    constexpr bool copy_hle = true;
+#endif
+    if ((copy_hle && IsComputeImageCopy(pipeline)) || IsComputeMetaClear(pipeline) ||
         IsComputeImageClear(pipeline)) {
         return false;
     }

@@ -84,11 +84,17 @@ copies.
   (`runs/unidades-bc-refutadas-20-11-1429/`).
 - **The crash history says the copy is not the hanging command.** The failing submit (`tick 21812`,
   `#25797`) ends in draws and guest compute dispatches (`aec539f0` 1×360, `7095d6c2` 1×1); the copies
-  are in the middle of the same submit and the GPU consumes them. What changes with copies on is the
-  *state* the later draws/dispatches see.
-- **Next:** dump `0x7095d6c2`, `0xaec539f0`, `0x6a6422a9` (`BB_DUMP_SHADERS=…`) in a copy-on run and
-  read the shader that ends the hung submit; a dispatch with a data-dependent loop is the shape that
-  turns a wrong buffer into a GPU hang instead of a wrong pixel.
+  are in the middle of the same submit and the GPU consumes them
+  (`runs/dump-do-submit-que-trava-20-11-1432/`).
+- **Refuted:** a runaway shader. The three dumped compute shaders of that submit have no loop, no
+  atomics and no image writes; their `OpControlBarrier`s sit at uniform labels
+  (`runs/dump-do-submit-que-trava-20-11-1432/shader-dumps/`).
+- **Refuted:** recording order. `BB_VK_RECORD_THREAD=0` gives the same crash
+  (`runs/gravacao-na-thread-chamadora-tambem-cai-20-11-1437/`).
+- **The substitution the port invented is the only remaining difference.** `IsComputeImageCopy`
+  (`vk_rasterizer.cpp:3423`) replaces the guest's copy shader with a host `vkCmdCopyImage`; with
+  `BB_SKIP_COPY=1` that replacement copies nothing, which is exactly why the scene is magenta. The next
+  run keeps every host copy off and lets the guest's shader run (`BB_NO_COPY_HLE=1`).
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors

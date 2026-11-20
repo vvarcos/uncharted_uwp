@@ -1,0 +1,260 @@
+; SPIR-V
+; Version: 1.6
+; Generator: Khronos; 0
+; Bound: 117
+; Schema: 0
+               OpCapability Shader
+               OpCapability Image1D
+               OpCapability Int64
+               OpCapability Sampled1D
+               OpCapability ImageQuery
+               OpCapability StorageBuffer8BitAccess
+               OpCapability Int8
+               OpCapability Int16
+               OpCapability StorageBuffer16BitAccess
+               OpCapability DenormFlushToZero
+               OpExtension "SPV_KHR_float_controls"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %75 "main" %push_data %gl_WorkGroupID %gl_LocalInvocationID %ssbo_1 %ssbo_1_0 %ssbo_1_1 %ssbo_1_2 %ssbo_2 %ssbo_2_0 %ssbo_2_1 %ssbo_2_2
+               OpExecutionMode %75 LocalSize 64 1 1
+               OpExecutionMode %75 DenormFlushToZero 32
+          %1 = OpString "0x6a6422a9"
+               OpName %void_id "void_id"
+               OpName %bool_id "bool_id"
+               OpName %u8_id "u8_id"
+               OpName %i8_id "i8_id"
+               OpName %u16_id "u16_id"
+               OpName %i16_id "i16_id"
+               OpName %f32_id "f32_id"
+               OpName %i32_id "i32_id"
+               OpName %u32_id "u32_id"
+               OpName %u64_id "u64_id"
+               OpName %f32vec2_id "f32vec2_id"
+               OpName %i32vec2_id "i32vec2_id"
+               OpName %u32vec2_id "u32vec2_id"
+               OpName %bvec2_id "bvec2_id"
+               OpName %f32vec3_id "f32vec3_id"
+               OpName %i32vec3_id "i32vec3_id"
+               OpName %u32vec3_id "u32vec3_id"
+               OpName %bvec3_id "bvec3_id"
+               OpName %f32vec4_id "f32vec4_id"
+               OpName %i32vec4_id "i32vec4_id"
+               OpName %u32vec4_id "u32vec4_id"
+               OpName %bvec4_id "bvec4_id"
+               OpName %input_f32 "input_f32"
+               OpName %input_u32 "input_u32"
+               OpName %input_s32 "input_s32"
+               OpName %output_f32 "output_f32"
+               OpName %output_u32 "output_u32"
+               OpName %output_s32 "output_s32"
+               OpName %full_result_i32x2 "full_result_i32x2"
+               OpName %full_result_u32x2 "full_result_u32x2"
+               OpName %frexp_result_f32 "frexp_result_f32"
+               OpName %AuxData "AuxData"
+               OpMemberName %AuxData 0 "xoffset"
+               OpMemberName %AuxData 1 "yoffset"
+               OpMemberName %AuxData 2 "xscale"
+               OpMemberName %AuxData 3 "yscale"
+               OpMemberName %AuxData 4 "ud_regs0"
+               OpMemberName %AuxData 5 "ud_regs1"
+               OpMemberName %AuxData 6 "ud_regs2"
+               OpMemberName %AuxData 7 "ud_regs3"
+               OpMemberName %AuxData 8 "buf_offsets0"
+               OpMemberName %AuxData 9 "buf_offsets1"
+               OpMemberName %AuxData 10 "buf_offsets2"
+               OpMemberName %AuxData 11 "motion_param"
+               OpMemberName %AuxData 12 "scene_size"
+               OpName %push_data "push_data"
+               OpMemberName %_struct_51 0 "data"
+               OpName %ssbo_1 "ssbo_1"
+               OpMemberName %_struct_56 0 "data"
+               OpName %ssbo_1_0 "ssbo_1"
+               OpMemberName %_struct_61 0 "data"
+               OpName %ssbo_1_1 "ssbo_1"
+               OpMemberName %_struct_66 0 "data"
+               OpName %ssbo_1_2 "ssbo_1"
+               OpName %ssbo_2 "ssbo_2"
+               OpName %ssbo_2_0 "ssbo_2"
+               OpName %ssbo_2_1 "ssbo_2"
+               OpName %ssbo_2_2 "ssbo_2"
+               OpName %buf0_off "buf0_off"
+               OpName %buf0_word_off "buf0_word_off"
+               OpName %buf0_dword_off "buf0_dword_off"
+               OpName %buf1_off "buf1_off"
+               OpName %buf1_word_off "buf1_word_off"
+               OpName %buf1_dword_off "buf1_dword_off"
+               OpName %ud_6 "ud_6"
+               OpDecorate %AuxData Block
+               OpMemberDecorate %AuxData 0 Offset 0
+               OpMemberDecorate %AuxData 1 Offset 4
+               OpMemberDecorate %AuxData 2 Offset 8
+               OpMemberDecorate %AuxData 3 Offset 12
+               OpMemberDecorate %AuxData 4 Offset 16
+               OpMemberDecorate %AuxData 5 Offset 32
+               OpMemberDecorate %AuxData 6 Offset 48
+               OpMemberDecorate %AuxData 7 Offset 64
+               OpMemberDecorate %AuxData 8 Offset 80
+               OpMemberDecorate %AuxData 9 Offset 96
+               OpMemberDecorate %AuxData 10 Offset 112
+               OpMemberDecorate %AuxData 11 Offset 120
+               OpMemberDecorate %AuxData 12 Offset 124
+               OpDecorate %gl_WorkGroupID BuiltIn WorkgroupId
+               OpDecorate %gl_LocalInvocationID BuiltIn LocalInvocationId
+               OpDecorate %_runtimearr_u32_id ArrayStride 4
+               OpDecorate %_struct_51 Block
+               OpMemberDecorate %_struct_51 0 Offset 0
+               OpDecorate %ssbo_1 Binding 0
+               OpDecorate %ssbo_1 DescriptorSet 0
+               OpDecorate %ssbo_1 NonWritable
+               OpDecorate %_runtimearr_f32_id ArrayStride 4
+               OpDecorate %_struct_56 Block
+               OpMemberDecorate %_struct_56 0 Offset 0
+               OpDecorate %ssbo_1_0 Binding 0
+               OpDecorate %ssbo_1_0 DescriptorSet 0
+               OpDecorate %ssbo_1_0 NonWritable
+               OpDecorate %_runtimearr_u16_id ArrayStride 2
+               OpDecorate %_struct_61 Block
+               OpMemberDecorate %_struct_61 0 Offset 0
+               OpDecorate %ssbo_1_1 Binding 0
+               OpDecorate %ssbo_1_1 DescriptorSet 0
+               OpDecorate %ssbo_1_1 NonWritable
+               OpDecorate %_runtimearr_u8_id ArrayStride 1
+               OpDecorate %_struct_66 Block
+               OpMemberDecorate %_struct_66 0 Offset 0
+               OpDecorate %ssbo_1_2 Binding 0
+               OpDecorate %ssbo_1_2 DescriptorSet 0
+               OpDecorate %ssbo_1_2 NonWritable
+               OpDecorate %ssbo_2 Binding 1
+               OpDecorate %ssbo_2 DescriptorSet 0
+               OpDecorate %ssbo_2 Coherent
+               OpDecorate %ssbo_2_0 Binding 1
+               OpDecorate %ssbo_2_0 DescriptorSet 0
+               OpDecorate %ssbo_2_0 Coherent
+               OpDecorate %ssbo_2_1 Binding 1
+               OpDecorate %ssbo_2_1 DescriptorSet 0
+               OpDecorate %ssbo_2_1 Coherent
+               OpDecorate %ssbo_2_2 Binding 1
+               OpDecorate %ssbo_2_2 DescriptorSet 0
+               OpDecorate %ssbo_2_2 Coherent
+    %void_id = OpTypeVoid
+    %bool_id = OpTypeBool
+      %u8_id = OpTypeInt 8 0
+      %i8_id = OpTypeInt 8 1
+     %u16_id = OpTypeInt 16 0
+     %i16_id = OpTypeInt 16 1
+     %f32_id = OpTypeFloat 32
+     %i32_id = OpTypeInt 32 1
+     %u32_id = OpTypeInt 32 0
+     %u64_id = OpTypeInt 64 0
+ %f32vec2_id = OpTypeVector %f32_id 2
+ %i32vec2_id = OpTypeVector %i32_id 2
+ %u32vec2_id = OpTypeVector %u32_id 2
+   %bvec2_id = OpTypeVector %bool_id 2
+ %f32vec3_id = OpTypeVector %f32_id 3
+ %i32vec3_id = OpTypeVector %i32_id 3
+ %u32vec3_id = OpTypeVector %u32_id 3
+   %bvec3_id = OpTypeVector %bool_id 3
+ %f32vec4_id = OpTypeVector %f32_id 4
+ %i32vec4_id = OpTypeVector %i32_id 4
+ %u32vec4_id = OpTypeVector %u32_id 4
+   %bvec4_id = OpTypeVector %bool_id 4
+       %true = OpConstantTrue %bool_id
+      %false = OpConstantFalse %bool_id
+    %u8_id_1 = OpConstant %u8_id 1
+    %u8_id_0 = OpConstant %u8_id 0
+   %u16_id_0 = OpConstant %u16_id 0
+   %u32_id_1 = OpConstant %u32_id 1
+   %u32_id_0 = OpConstant %u32_id 0
+   %f32_id_0 = OpConstant %f32_id 0
+   %u64_id_1 = OpConstant %u64_id 1
+   %u64_id_0 = OpConstant %u64_id 0
+%f32_id_6_28318548 = OpConstant %f32_id 6.28318548
+  %input_f32 = OpTypePointer Input %f32_id
+  %input_u32 = OpTypePointer Input %u32_id
+  %input_s32 = OpTypePointer Input %i32_id
+ %output_f32 = OpTypePointer Output %f32_id
+ %output_u32 = OpTypePointer Output %u32_id
+ %output_s32 = OpTypePointer Output %i32_id
+%full_result_i32x2 = OpTypeStruct %i32_id %i32_id
+%full_result_u32x2 = OpTypeStruct %u32_id %u32_id
+%frexp_result_f32 = OpTypeStruct %f32_id %i32_id
+    %AuxData = OpTypeStruct %f32_id %f32_id %f32_id %f32_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec2_id %u32_id %u32_id
+%_ptr_PushConstant_AuxData = OpTypePointer PushConstant %AuxData
+%_ptr_Input_u32vec3_id = OpTypePointer Input %u32vec3_id
+%_runtimearr_u32_id = OpTypeRuntimeArray %u32_id
+ %_struct_51 = OpTypeStruct %_runtimearr_u32_id
+%_ptr_StorageBuffer__struct_51 = OpTypePointer StorageBuffer %_struct_51
+%_ptr_StorageBuffer_u32_id = OpTypePointer StorageBuffer %u32_id
+%_runtimearr_f32_id = OpTypeRuntimeArray %f32_id
+ %_struct_56 = OpTypeStruct %_runtimearr_f32_id
+%_ptr_StorageBuffer__struct_56 = OpTypePointer StorageBuffer %_struct_56
+%_ptr_StorageBuffer_f32_id = OpTypePointer StorageBuffer %f32_id
+%_runtimearr_u16_id = OpTypeRuntimeArray %u16_id
+ %_struct_61 = OpTypeStruct %_runtimearr_u16_id
+%_ptr_StorageBuffer__struct_61 = OpTypePointer StorageBuffer %_struct_61
+%_ptr_StorageBuffer_u16_id = OpTypePointer StorageBuffer %u16_id
+%_runtimearr_u8_id = OpTypeRuntimeArray %u8_id
+ %_struct_66 = OpTypeStruct %_runtimearr_u8_id
+%_ptr_StorageBuffer__struct_66 = OpTypePointer StorageBuffer %_struct_66
+%_ptr_StorageBuffer_u8_id = OpTypePointer StorageBuffer %u8_id
+         %74 = OpTypeFunction %void_id
+   %u32_id_8 = OpConstant %u32_id 8
+%_ptr_PushConstant_u32_id = OpTypePointer PushConstant %u32_id
+   %u32_id_2 = OpConstant %u32_id 2
+   %u32_id_4 = OpConstant %u32_id 4
+  %u32_id_64 = OpConstant %u32_id 64
+   %f32_id_1 = OpConstant %f32_id 1
+        %108 = OpConstantComposite %f32vec4_id %f32_id_0 %f32_id_1 %f32_id_0 %f32_id_0
+  %push_data = OpVariable %_ptr_PushConstant_AuxData PushConstant
+%gl_WorkGroupID = OpVariable %_ptr_Input_u32vec3_id Input
+%gl_LocalInvocationID = OpVariable %_ptr_Input_u32vec3_id Input
+     %ssbo_1 = OpVariable %_ptr_StorageBuffer__struct_51 StorageBuffer
+   %ssbo_1_0 = OpVariable %_ptr_StorageBuffer__struct_56 StorageBuffer
+   %ssbo_1_1 = OpVariable %_ptr_StorageBuffer__struct_61 StorageBuffer
+   %ssbo_1_2 = OpVariable %_ptr_StorageBuffer__struct_66 StorageBuffer
+     %ssbo_2 = OpVariable %_ptr_StorageBuffer__struct_51 StorageBuffer
+   %ssbo_2_0 = OpVariable %_ptr_StorageBuffer__struct_56 StorageBuffer
+   %ssbo_2_1 = OpVariable %_ptr_StorageBuffer__struct_61 StorageBuffer
+   %ssbo_2_2 = OpVariable %_ptr_StorageBuffer__struct_66 StorageBuffer
+         %75 = OpFunction %void_id None %74
+         %76 = OpLabel
+         %82 = OpAccessChain %_ptr_PushConstant_u32_id %push_data %u32_id_8 %u32_id_0
+         %83 = OpLoad %u32_id %82
+   %buf0_off = OpBitFieldUExtract %u32_id %83 %u32_id_0 %u32_id_8
+%buf0_word_off = OpShiftRightLogical %u32_id %buf0_off %u32_id_1
+%buf0_dword_off = OpShiftRightLogical %u32_id %buf0_off %u32_id_2
+         %88 = OpAccessChain %_ptr_PushConstant_u32_id %push_data %u32_id_8 %u32_id_0
+         %89 = OpLoad %u32_id %88
+   %buf1_off = OpBitFieldUExtract %u32_id %89 %u32_id_8 %u32_id_8
+%buf1_word_off = OpShiftRightLogical %u32_id %buf1_off %u32_id_1
+%buf1_dword_off = OpShiftRightLogical %u32_id %buf1_off %u32_id_2
+         %94 = OpAccessChain %_ptr_PushConstant_u32_id %push_data %u32_id_4 %u32_id_0
+       %ud_6 = OpLoad %u32_id %94
+         %96 = OpLoad %u32vec3_id %gl_LocalInvocationID
+         %97 = OpCompositeExtract %u32_id %96 0
+         %98 = OpLoad %u32vec3_id %gl_WorkGroupID
+         %99 = OpCompositeExtract %u32_id %98 0
+        %101 = OpIMul %u32_id %99 %u32_id_64
+        %102 = OpIAdd %u32_id %101 %97
+        %103 = OpIAdd %u32_id %102 %buf0_dword_off
+        %104 = OpAccessChain %_ptr_StorageBuffer_f32_id %ssbo_1_0 %u32_id_0 %103
+        %105 = OpLoad %f32_id %104
+        %106 = OpCompositeConstruct %f32vec4_id %105 %f32_id_0 %f32_id_0 %f32_id_0
+        %109 = OpVectorShuffle %f32vec4_id %108 %106 4 0 0 0
+        %110 = OpCompositeExtract %f32_id %109 0
+        %111 = OpUGreaterThan %bool_id %ud_6 %102
+               OpSelectionMerge %78 None
+               OpBranchConditional %111 %77 %78
+         %77 = OpLabel
+        %112 = OpCompositeConstruct %f32vec4_id %110 %f32_id_0 %f32_id_0 %f32_id_0
+        %113 = OpVectorShuffle %f32vec4_id %108 %112 4 0 0 0
+        %114 = OpCompositeExtract %f32_id %113 0
+        %115 = OpIAdd %u32_id %102 %buf1_dword_off
+        %116 = OpAccessChain %_ptr_StorageBuffer_f32_id %ssbo_2_0 %u32_id_0 %115
+               OpStore %116 %114
+               OpBranch %78
+         %78 = OpLabel
+               OpBranch %79
+         %79 = OpLabel
+               OpReturn
+               OpFunctionEnd

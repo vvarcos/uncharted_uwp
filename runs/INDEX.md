@@ -8,6 +8,8 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [gravacao-na-thread-chamadora-tambem-cai-20-11-1437](gravacao-na-thread-chamadora-tambem-cai-20-11-1437/run.md) | 20-11 1437 | entry-unresolved | no | — | — | device lost | not a recording-order race |
+| [dump-do-submit-que-trava-20-11-1432](dump-do-submit-que-trava-20-11-1432/run.md) | 20-11 1432 | entry-unresolved | no | — | — | device lost | hung submit ends in draws/dispatches; no shader loop |
 | [unidades-bc-refutadas-20-11-1429](unidades-bc-refutadas-20-11-1429/run.md) | 20-11 1429 | entry-unresolved | no | — | — | assert no boot | blocks vs pixels: Dozen wants pixels, blocks give `OUT_OF_HOST_MEMORY` |
 | [sync-nao-salva-o-copy-20-11-1418](sync-nao-salva-o-copy-20-11-1418/run.md) | 20-11 1418 | entry-unresolved | no | — | — | device lost | image lifetime refuted; the command faults |
 | [sem-espera-no-submit-culpado-20-11-1408](sem-espera-no-submit-culpado-20-11-1408/run.md) | 20-11 1408 | entry-unresolved | no | — | — | device lost | failing submit has no waits; fault is in the resources |
@@ -47,4 +49,6 @@ Newest first.
 | [sem-espera-no-submit-culpado-20-11-1408](sem-espera-no-submit-culpado-20-11-1408/run.md) | 20-11 1408 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [sync-nao-salva-o-copy-20-11-1418](sync-nao-salva-o-copy-20-11-1418/run.md) | 20-11 1418 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [unidades-bc-refutadas-20-11-1429](unidades-bc-refutadas-20-11-1429/run.md) | 20-11 1429 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [dump-do-submit-que-trava-20-11-1432](dump-do-submit-que-trava-20-11-1432/run.md) | 20-11 1432 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [gravacao-na-thread-chamadora-tambem-cai-20-11-1437](gravacao-na-thread-chamadora-tambem-cai-20-11-1437/run.md) | 20-11 1437 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
