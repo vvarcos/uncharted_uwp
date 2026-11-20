@@ -688,9 +688,10 @@ void Render(vk::CommandBuffer cmdbuf, vk::ImageView view, vk::Extent2D extent) {
                   static_cast<unsigned long long>(frame_counters.scheduler_finishes),
                   static_cast<unsigned long long>(frame_counters.scheduler_finish_us / 1000),
                   static_cast<unsigned long long>(frame_counters.arena_replacements));
-    std::snprintf(quad_line, sizeof(quad_line), "QUAD %llu idx %llu",
+    std::snprintf(quad_line, sizeof(quad_line), "QUAD %llu idx %llu R %llu",
                   static_cast<unsigned long long>(frame_counters.quad_draws),
-                  static_cast<unsigned long long>(frame_counters.quad_indices));
+                  static_cast<unsigned long long>(frame_counters.quad_indices),
+                  static_cast<unsigned long long>(frame_counters.rect_draws));
     ClampLine(ram_line, sizeof(ram_line));
     ClampLine(rate_line, sizeof(rate_line));
     ClampLine(trace_line, sizeof(trace_line));
@@ -782,7 +783,7 @@ void NotePresent() {
         memory_limit_mib = winrt::Windows::System::MemoryManager::AppMemoryUsageLimit() >> 20;
         const double fps = frame_ms_avg > 0.0 ? 1000.0 / frame_ms_avg : 0.0;
         std::printf("HUD: %.1f FPS %.2f ms RAM %llu/%llu/%llu MiB frames=%llu "
-                    "fin=%llu fin_ms=%.1f arena=%llu quad=%llu qidx=%llu\n",
+                    "fin=%llu fin_ms=%.1f arena=%llu quad=%llu qidx=%llu rect=%llu\n",
                     fps, frame_ms_avg, static_cast<unsigned long long>(memory_current_mib),
                     static_cast<unsigned long long>(memory_peak_mib),
                     static_cast<unsigned long long>(memory_limit_mib),
@@ -791,7 +792,8 @@ void NotePresent() {
                     static_cast<double>(frame_counters.scheduler_finish_us) / 1000.0,
                     static_cast<unsigned long long>(frame_counters.arena_replacements),
                     static_cast<unsigned long long>(frame_counters.quad_draws),
-                    static_cast<unsigned long long>(frame_counters.quad_indices));
+                    static_cast<unsigned long long>(frame_counters.quad_indices),
+                    static_cast<unsigned long long>(frame_counters.rect_draws));
         std::fflush(stdout);
     } catch (...) {
         // Telemetry must never take the renderer down.

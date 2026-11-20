@@ -17,6 +17,7 @@ struct Totals {
     std::atomic<uint64_t> arena_replacements{0};
     std::atomic<uint64_t> quad_draws{0};
     std::atomic<uint64_t> quad_indices{0};
+    std::atomic<uint64_t> rect_draws{0};
 };
 
 inline Totals& Get() {
@@ -43,6 +44,12 @@ inline void NoteQuadExpansion(uint64_t expanded_indices) {
     totals.quad_indices.fetch_add(expanded_indices, std::memory_order_relaxed);
 }
 
+/// RECT_LIST has no index expansion; it is counted so a frame can say whether the missing half of a
+/// rectangle comes from this path (the console has no tessellation, so RECT_LIST cannot be emulated).
+inline void NoteRectDraw() {
+    Get().rect_draws.fetch_add(1, std::memory_order_relaxed);
+}
+
 /// Delta since the previous call. Called once per present, from the presentation thread only:
 /// the `last_*` baselines below are plain integers, so a second present thread would race.
 struct Frame {
@@ -51,6 +58,7 @@ struct Frame {
     uint64_t arena_replacements{};
     uint64_t quad_draws{};
     uint64_t quad_indices{};
+    uint64_t rect_draws{};
 };
 
 inline Frame TakeFrame() {
@@ -59,23 +67,27 @@ inline Frame TakeFrame() {
     static uint64_t last_arena{};
     static uint64_t last_quads{};
     static uint64_t last_indices{};
+    static uint64_t last_rects{};
     auto& totals = Get();
     const uint64_t finishes = totals.scheduler_finishes.load(std::memory_order_relaxed);
     const uint64_t finish_ns = totals.scheduler_finish_ns.load(std::memory_order_relaxed);
     const uint64_t arena = totals.arena_replacements.load(std::memory_order_relaxed);
     const uint64_t quads = totals.quad_draws.load(std::memory_order_relaxed);
     const uint64_t indices = totals.quad_indices.load(std::memory_order_relaxed);
+    const uint64_t rects = totals.rect_draws.load(std::memory_order_relaxed);
     Frame frame;
     frame.scheduler_finishes = finishes - last_finishes;
     frame.scheduler_finish_us = (finish_ns - last_finish_ns) / 1000;
     frame.arena_replacements = arena - last_arena;
     frame.quad_draws = quads - last_quads;
     frame.quad_indices = indices - last_indices;
+    frame.rect_draws = rects - last_rects;
     last_finishes = finishes;
     last_finish_ns = finish_ns;
     last_arena = arena;
     last_quads = quads;
     last_indices = indices;
+    last_rects = rects;
     return frame;
 }
 

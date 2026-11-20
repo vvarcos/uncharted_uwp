@@ -5,6 +5,15 @@ $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 $local=Join-Path $root '.local'
 $layout=Join-Path $local 'build/layout'
+# A stale layout silently ships the previous renderer: the version number changes but the DLL does
+# not, so every test measures the old binary. Fail loudly instead.
+$built=Join-Path $local 'build/bbgpu_dll.dll'
+$staged=Join-Path $layout 'bbgpu_dll.dll'
+if((Test-Path -LiteralPath $built) -and (Test-Path -LiteralPath $staged)) {
+    if((Get-FileHash -LiteralPath $built).Hash -ne (Get-FileHash -LiteralPath $staged).Hash) {
+        throw "layout/bbgpu_dll.dll differs from the build output; rebuild before packaging"
+    }
+}
 & (Join-Path $PSScriptRoot 'check-imports.ps1') -Folder $layout
 & (Join-Path $PSScriptRoot 'assets.ps1')
 $vs=& "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -property installationPath

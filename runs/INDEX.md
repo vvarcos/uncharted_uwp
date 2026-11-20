@@ -9,6 +9,10 @@ Created by [`new-run.ps1`](../xbox/scripts/new-run.ps1); completed by hand after
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [000-reconstrucao](000-reconstrucao/run.md) | 19-11 (written) | none | menu only | not measured | 3 837–3 897 MiB (menu) | no | baseline reconstructed from the documents |
 <!-- RUNS -->
+| [culling-desligado-20-11-0030](culling-desligado-20-11-0030/run.md) | 20-11 0030 | entry-unresolved | não | — | — | não | rodada vazia: app já tinha saído |
+| [culling-desligado-20-11-0030](culling-desligado-20-11-0030/run.md) | 20-11 0030 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [varredura-da-moeda-e-transicao-20-11-0019](varredura-da-moeda-e-transicao-20-11-0019/run.md) | 20-11 0019 | entry-unresolved | não (cutscene) | 14–54 | 4 178 MiB | não | frame de transição mostra o triângulo gigante |
+| [varredura-da-moeda-e-transicao-20-11-0019](varredura-da-moeda-e-transicao-20-11-0019/run.md) | 20-11 0019 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [navegacao-303-sem-capturar-a-moeda-20-11-0011](navegacao-303-sem-capturar-a-moeda-20-11-0011/run.md) | 20-11 0011 | entry-unresolved | não (cutscene) | 57.1 | 4 421 MiB | não | build 303; moeda não capturada |
 | [navegacao-303-sem-capturar-a-moeda-20-11-0011](navegacao-303-sem-capturar-a-moeda-20-11-0011/run.md) | 20-11 0011 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [continue-com-retire-20-11-0004](continue-com-retire-20-11-0004/run.md) | 20-11 0004 | entry-unresolved | não | 48.8 (menu) | 3 751 MiB | hang no Continue | retire não resolveu |
@@ -20,6 +24,8 @@ Created by [`new-run.ps1`](../xbox/scripts/new-run.ps1); completed by hand after
 | [ajm-contornado-e-pipeline-19-11-2305](ajm-contornado-e-pipeline-19-11-2305/run.md) | 19-11 2305 | entry-realgnm-draw | no (pipeline reject) | — | 300 MiB (startup) | no | passou do Ajm; Dozen recusou vs 4f38cbc0 / fs b1032a3f |
 | [primeiro-entry-com-draw-19-11-2249](primeiro-entry-com-draw-19-11-2249/run.md) | 19-11 2249 | entry-realgnm-draw | no (M3 FAILED) | — | 317 MiB | no | Prepared image missing; stage mode is the next step |
 | [primeiro-build-depois-da-perda-19-11-2230](primeiro-build-depois-da-perda-19-11-2230/run.md) | 19-11 2230 | none | no (M2 READY) | — | 332 MiB | no | recovered tree builds, installs and presents |
+
+
 
 
 

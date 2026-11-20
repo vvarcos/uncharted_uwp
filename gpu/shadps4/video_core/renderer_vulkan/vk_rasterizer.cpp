@@ -3287,6 +3287,13 @@ void Rasterizer::ResolveIndexBuffer(u32 index_offset) {
      * same as that path. Index type stays 32-bit because the copy is ours, not the guest's. */
     quad_expanded_indices = 0;
     if (static_cast<u32>(regs.primitive_type) ==
+        static_cast<u32>(AmdGpu::PrimitiveType::RectList)) {
+        /* RECT_LIST has no index expansion: the guest supplies three corners plus the rectangle flag.
+         * On this device the tessellation emulation is unavailable, so the draw keeps three indices
+         * and half of the rectangle is missing. Counted so the HUD can prove it. */
+        BbPort::Counters::NoteRectDraw();
+    }
+    if (static_cast<u32>(regs.primitive_type) ==
             static_cast<u32>(AmdGpu::PrimitiveType::QuadList) &&
         regs.num_indices >= 4) {
         const u32 quads = regs.num_indices / 4;
@@ -5306,9 +5313,17 @@ void Rasterizer::UpdatePrimitiveState(const bool is_indexed) const {
                    regs.primitive_restart_index == 0xFFFFFFFF,
                "Primitive restart index other than -1 is not supported yet");
 
-    const auto cull_mode = LiverpoolToVK::IsPrimitiveCulled(regs.primitive_type)
-                               ? LiverpoolToVK::CullMode(regs.polygon_control.CullingMode())
-                               : vk::CullModeFlagBits::eNone;
+    // bbport: BB_NO_CULL=1 answers whether a missing triangle is a winding/culling problem or a
+    // triangle drawn with the wrong content. It is a diagnostic switch only.
+    static const bool no_cull = [] {
+        const char* env = std::getenv("BB_NO_CULL");
+        return env != nullptr && env[0] == '1';
+    }();
+    const auto cull_mode =
+        no_cull ? vk::CullModeFlagBits::eNone
+                : (LiverpoolToVK::IsPrimitiveCulled(regs.primitive_type)
+                       ? LiverpoolToVK::CullMode(regs.polygon_control.CullingMode())
+                       : vk::CullModeFlagBits::eNone);
     const auto front_face = LiverpoolToVK::FrontFace(regs.polygon_control.front_face);
 
     dynamic_state.SetPrimitiveRestartEnabled(prim_restart);

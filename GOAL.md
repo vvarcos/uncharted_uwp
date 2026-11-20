@@ -116,3 +116,7 @@ The work does not wait for instructions that the repository already answers. The
    and confirm the new version number in the install output. A package version that repeats between
    builds means the console is running the old binary — the 20-11 0004 coin run wasted a cycle that
    way (`runs/moeda-sem-o-fix-instalado-20-11-0004/`).
+8. **The version is not enough: check the renderer hash.** Between 23:36 and 00:35 the layout copy of
+   `bbgpu_dll.dll` did not refresh, so versions 303, 320 and 330 all shipped the same renderer and
+   three "tests" measured nothing. `package.ps1` now refuses to package when the layout DLL differs
+   from the build output; treat that error as the signal that the console would run the old code.

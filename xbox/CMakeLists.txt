@@ -162,7 +162,9 @@ if(UNCHARTED_BUILD_GRAPHICS)
           "${BBGPU_DLL_STORE}/vcruntime.lib")
       endif()
     endif()
-    add_custom_command(TARGET uncharted_uwp POST_BUILD
+    # Attach the copy to bbgpu_dll itself: attaching it to the executable meant that a rebuild of the
+    # renderer alone never refreshed the layout, so packages shipped the previous DLL.
+    add_custom_command(TARGET bbgpu_dll POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:bbgpu_dll>" "${UNCHARTED_LAYOUT}")
     if(UNCHARTED_BUILD_GUEST)
       # Event queues use fmt logging; keep desktop renderer/media deps out of the app link.
