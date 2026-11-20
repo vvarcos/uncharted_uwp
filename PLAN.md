@@ -91,10 +91,23 @@ copies.
   (`runs/dump-do-submit-que-trava-20-11-1432/shader-dumps/`).
 - **Refuted:** recording order. `BB_VK_RECORD_THREAD=0` gives the same crash
   (`runs/gravacao-na-thread-chamadora-tambem-cai-20-11-1437/`).
-- **The substitution the port invented is the only remaining difference.** `IsComputeImageCopy`
-  (`vk_rasterizer.cpp:3423`) replaces the guest's copy shader with a host `vkCmdCopyImage`; with
-  `BB_SKIP_COPY=1` that replacement copies nothing, which is exactly why the scene is magenta. The next
-  run keeps every host copy off and lets the guest's shader run (`BB_NO_COPY_HLE=1`).
+- **Refuted:** the substitution. Letting the guest's own copy shader run
+  (`BB_NO_COPY_HLE=1`, no host copy at all) reaches the same submit and the same hang
+  (`runs/shader-do-jogo-copia-e-ainda-trava-20-11-1441/`).
+- **Refuted:** the data-dependent light loop. The shader that closes the submit was replaced by one with
+  `min(count, 8)` — the marker proves the module was in use — and the load still died
+  (`runs/patch-aplicado-ainda-trava-20-11-1503/`).
+- **Refuted:** the specific programs. Skipping the two tail dispatches only changes which program ends
+  the submit (`runs/dispatches-pulados-ainda-cai-20-11-1509/`).
+- **Separated at last:** `BB_COPY_BARRIERS_ONLY=1` makes the same transfer barrier pair and copies
+  nothing. The app then **runs 2.2 minutes into the boat scene**
+  (`runs/barreiras-sem-copia-jogo-roda-20-11-1515/`). So the barrier/layout side is innocent and the
+  crash needs the **copied content**; the tick at the crash also moves a lot between runs (21 812 →
+  29 499), so it is a condition, not a fixed frame.
+- **The same run also settles 2.1's premise:** the scene renders the same way with the copy disabled, so
+  the copies are **not** what the colours are missing. The magenta has its own cause.
+- **Next:** profile the GPU with copies on (`BB_GPU_PROFILE=1`) and read the last per-pass timings before
+  the stall; that names the pass that explodes when it sees the copied data.
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors
