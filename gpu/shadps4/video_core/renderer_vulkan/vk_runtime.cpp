@@ -676,6 +676,11 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
                             static_cast<u32>(src_format), static_cast<u32>(dst_format));
                 std::fflush(stdout);
             }
+#ifdef UNCHARTED_UWP
+            if (const char* sync = std::getenv("BB_COPY_SYNC"); sync != nullptr && sync[0] == '1') {
+                scheduler.Finish();
+            }
+#endif
             return;
         }
     }
@@ -692,6 +697,20 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
                     static_cast<u32>(src->info.size.height));
         std::fflush(stdout);
     }
+#endif
+#ifdef UNCHARTED_UWP
+    // Diagnosis: the copy is recorded into a deferred command with raw VkImage handles. If the
+    // texture cache evicts either image before the submit, the GPU faults on a destroyed image.
+    // Finishing right after the copy says whether the lifetime is the fault.
+    static const bool copy_sync = [] {
+        const char* env = std::getenv("BB_COPY_SYNC");
+        return env != nullptr && env[0] == '1';
+    }();
+    const auto maybe_sync = [&] {
+        if (copy_sync) {
+            scheduler.Finish();
+        }
+    };
 #endif
     if (src->info.num_samples == 1 && dst->info.num_samples == 1) {
 #ifdef UNCHARTED_UWP
@@ -763,6 +782,9 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
     } else {
         LOG_WARNING(Render_Vulkan, "Unimplemented depth overlap copy");
     }
+#ifdef UNCHARTED_UWP
+    maybe_sync();
+#endif
 }
 
 void Runtime::CopyDepthStencil(VideoCore::Image* src, VideoCore::Image* dst,
