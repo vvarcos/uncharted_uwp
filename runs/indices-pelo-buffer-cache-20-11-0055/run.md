@@ -41,20 +41,27 @@ buffer cache (`InvalidateMemory` + `ObtainBuffer`) instead of the raw guest poin
 
 ## Reached gameplay?
 
-- Verdict: **no** — the run died on Continue, before any loading screen.
+- Verdict: **no** — the run died on Continue, before any loading screen. The user then reached the
+  coin through New Game on this same build and captured it: **the coin is almost entirely gone**,
+  reduced to a thin slice at the top-left (`18.6 FPS`, `QUAD 35 idx 210 R 0`, 4 020 MiB).
 
 ## Captures
 
-None: all frames are the dashboard.
+None in the repository: the frames here are the dashboard. The coin frame on this build is the
+user's capture, described above.
 
 ## Conclusion
 
-The change was not evaluated: Continue crashes the process before the coin, exactly as
-`docs/CONTINUE_LIFETIME.md` describes. The coin must be reached through **New Game** (menu → New
-Game → offline Friend Stats → Campaign → difficulty → loading), which is the path that produced the
-coin captures earlier.
+The cache read **was** evaluated after all, on the user's own run, and it made the defect worse: with
+the raw pointer the coin was mostly visible with a V notch; reading through `BufferCache` left only a
+thin slice. So the cache mapping is not the copy this draw needs; the change was reverted in
+`vk_rasterizer.cpp` with that reasoning recorded in the code.
+
+The coin responds to the index path, which means the indices reach the draw, but neither the raw
+guest memory nor the cache mapping produces the guest's intended four corners for this draw. The
+next measurement is the vertex side (`BB_FORCE_VB_UPLOAD=1`).
 
 ## Next single action
 
-Reach the coin through New Game on `1.0.26324.352` and compare with
+Run the New Game path with `BB_FORCE_VB_UPLOAD=1` and compare the coin against
 `runs/moeda-com-renderer-novo-r0-20-11-0046/captures/01-moeda-cunha-R0.png`.

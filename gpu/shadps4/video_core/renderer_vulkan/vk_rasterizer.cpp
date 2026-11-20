@@ -3310,18 +3310,10 @@ void Rasterizer::ResolveIndexBuffer(u32 index_offset) {
             }
         }
         std::vector<u32> indices(expanded);
-        // Read the guest indices through the buffer cache, not from raw memory: the cache owns the
-        // coherent copy, and a stale read here displaces one corner of the quad (the wedge on the
-        // loading coin, the Bluepoint logo and the gameplay composite).
-        buffer_cache.InvalidateMemory(index_address, index_buffer_size);
-        const auto [index_buffer, index_buffer_offset] =
-            buffer_cache.ObtainBuffer(index_address, index_buffer_size, false);
+        // Read the guest indices through the raw pointer: routing this through BufferCache changed
+        // the result for the worse (the loading coin went from mostly visible to a thin slice), so
+        // the cache mapping is not the copy this draw needs.
         const u8* src = reinterpret_cast<const u8*>(index_address);
-        if (index_buffer != nullptr && !index_buffer->mapped_data.empty() &&
-            index_buffer_offset + index_buffer_size <= index_buffer->mapped_data.size()) {
-            
-            src = index_buffer->mapped_data.data() + index_buffer_offset;
-        }
         for (u32 q = 0; q < quads; ++q) {
             u32 g[4];
             for (u32 k = 0; k < 4; ++k) {
@@ -3330,12 +3322,13 @@ void Rasterizer::ResolveIndexBuffer(u32 index_offset) {
                                   : *reinterpret_cast<const u32*>(at);
             }
             u32* out = indices.data() + q * 6;
+            // Corners arrive as v1,v2,v3,v0 around the quad (the order EmitQuadListTCS expects).
+            // The two triangles must be {v1,v2,v3} + {v1,v3,v0}: using v0 in the first triangle
+            // leaves a triangular hole between the diagonals, which is the wedge seen on the loading
+            // coin, the Bluepoint logo and the gameplay composite.
             out[0] = g[1];
             out[1] = g[2];
-            out[2] = g[0];
-            // Both triangles must keep the same winding as the tessellation path, or back-face
-            // culling drops the second one and leaves a wedge (loading coin, Bluepoint logo,
-            // gameplay composite). BL, TR, TL is the counter-clockwise partner of BL, BR, TL.
+            out[2] = g[3];
             out[3] = g[1];
             out[4] = g[3];
             out[5] = g[0];
