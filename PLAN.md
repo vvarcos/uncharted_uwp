@@ -64,6 +64,11 @@ copies.
   then fails a `VkResult` check, and later launches never present
   (`runs/block-row-always-on-fecha-janela-20-11-1232/`). The switch `BB_BLOCK_ROW_BLOCKS=1` remains
   only to avoid repeating the experiment.
+- **Refuted:** the staging buffer as the copy blocker — with `BB_COPY_FORCE_STAGING=0` the app dies
+  at the same second (`runs/copias-sem-staging-tambem-cai-20-11-1244/`), and the same happens with
+  only same-format copies active (`runs/modo-2-tambem-cai-20-11-1248/`).
+- **The open lead:** `gpu/shim/uwp_depth_copy.cpp` is a complete render-based copy backend and
+  nothing calls it. With both transfer classes failing, it has to become the copy path.
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors
