@@ -25,6 +25,21 @@ level; Continue shares the same load.
 The rule for this phase: **a screenshot of the boat scene with plausible colours, no missing
 geometry, no duplicated text and Xbox prompts**. No performance work until that holds.
 
+### Where the last session stopped (2026-11-20, 02:00)
+
+Two facts, from `runs/copias-ligadas-gpu-stall-20-11-0152/` and
+`runs/composite-pulado-tela-preta-20-11-0156/`:
+
+- **Copies off** (`BB_SKIP_COPY=1`, the current default): the game plays, textures are magenta.
+- **Copies on** (`=0`): the access violation is gone (the arena pin fixed it), but the load stops in a
+  GPU stall after 25 632 submits. Skipping the composite shader is not a workaround — it is the draw
+  that puts the scene on screen, so the result is a black screen at 57 FPS.
+
+So the session starts with one measurement, not a guess: with copies on, dump the submit that stalls
+(`BB_GPU_HISTORY=1` is already on) and say whether the composite samples an image the copies wrote or
+a different one. That answer decides between fixing the copy path and fixing the magenta without the
+copies.
+
 ### 2.1 Colour/depth copies on by default
 
 - Hypothesis: magenta/cyan is the composite sampling an image the colour/depth copies never filled.
