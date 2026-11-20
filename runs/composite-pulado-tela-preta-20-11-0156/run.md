@@ -19,8 +19,13 @@ the colours are correct without it.
 
 ## Result
 
-**The app survives and runs at 57 FPS, but the screen is black.** The HUD is the only thing drawn:
-`57.0 FPS 17.53 ms`, `FIN 0 0ms ARENA 1`, `QUAD 33 idx 198 R 0`, RAM 3 337 / 3 570 MiB.
+The capture was taken **too early**: the user watched the console and the load had already moved past
+this black interval. A black frame at 57 FPS with a live HUD is the loading gap between the movie and
+the scene, not the effect of the skipped shader.
+
+The app was alive and running; the run does not prove that skipping the composite blanks the screen,
+and it does not prove the stall either. It is a void measurement and must be repeated with a long
+wait (90–120 s) before any conclusion.
 
 That is expected in hindsight: `0xb4fa3a82` is the draw that puts the scene on screen, so skipping it
 cannot be a fix — it removes the picture. The old note that described "correct colours with the shader
@@ -29,18 +34,14 @@ quad triangulation).
 
 ## Conclusion
 
-Two facts are now settled:
+This run is **void**: the frame is the loading gap, captured before the scene appeared. Nothing here
+says whether the composite can be skipped or whether the copy stall resolves given time.
 
-1. Copies **off** → the game runs and plays, with magenta textures (Phase 2.2 must explain them).
-2. Copies **on** → GPU stall at the copy path, and the composite cannot be skipped to work around it.
+What stands from the previous run: with copies on, the app stopped presenting and the log repeated
+`GPU stall: submit #…` for 25 632 submits. Whether that is a permanent stall or a very slow path has
+to be measured with a long wait.
 
-So the copy path's stall has to be fixed on its own terms, or the magenta has to be fixed without the
-copies. The next session starts by choosing between those two with evidence, not by guessing: dump
-the copy submit that stalls (`BB_GPU_HISTORY=1` is already on) and check whether the composite reads
-an image the copies wrote or a different one.
+## Next single action
 
-## Captures
-
-| File | Scene | What it shows |
-| --- | --- | --- |
-| [`captures/01-tela-preta-hud.png`](captures/01-tela-preta-hud.png) | gameplay | black screen, HUD at 57 FPS |
+Repeat copies-on **without** skipping any shader, wait 120 s, and capture; if the scene appears, the
+"stall" was duration, not a hang.
