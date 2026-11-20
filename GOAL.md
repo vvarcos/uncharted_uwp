@@ -20,8 +20,10 @@ not the loading screen.
 | **QUAD_LIST geometry** | **fixed** — both triangles tile the quad | `runs/moeda-com-renderer-novo-r0-20-11-0046/`, verified by the user on 400 |
 | Gameplay frame rate | 2.5–4.9 FPS, `FIN` 21–68 calls at 243–1656 ms | user captures, 2026-11-20 |
 | Gameplay colours | whole scene magenta/cyan, black blocks where textures belong | user captures |
-| Level load | **access violation reading `0x10`** after two arena buffers are destroyed | logs of 2026-11-20 |
+| Level load | **fixed** — the arena pin removed the access violation; gameplay reached | `runs/gameplay-sem-crash-20-11-0133/` |
 | Memory in gameplay | ~4.5 GiB of 5 120 MiB | user captures |
+| Colour/depth copies | any real copy ends in a GPU timeout; **the trigger is the copied content**, not the copy command or its barriers | `runs/barreiras-sem-copia-jogo-roda-20-11-1515/` and the runs listed in `PLAN.md` |
+| Gameplay with copies disabled | reached and held for 2.2 minutes, 24 captures, 3 FPS | same entry |
 
 The 600-second runs in `HISTORY.md` were a menu at 60 Hz. They remain presentation evidence only.
 
