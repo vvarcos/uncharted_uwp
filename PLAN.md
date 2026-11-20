@@ -12,8 +12,11 @@ forward on a guess.
    package version** → confirm the version on the console.
 4. Reach the state with `xbox/scripts/pad.ps1` (D-pad and Cross only; sticks need `-Stick`).
 5. Capture with `xbox-screenshot.ps1`, pull `loader.log`.
-6. Write the entry, update [`runs/INDEX.md`](runs/INDEX.md), commit and push.
-7. If the hypothesis fails **twice**, stop and move to the next item; record the dead end.
+6. **Watch the run until the app exits** (`xbox/scripts/watch.ps1`): a frame every few seconds, so a
+   crash at 40 s is not mistaken for a loading screen at 30 s. The entry's timeline comes from those
+   frames.
+7. Write the entry, update [`runs/INDEX.md`](runs/INDEX.md), commit and push.
+8. If the hypothesis fails **twice**, stop and move to the next item; record the dead end.
 
 Current build: `1.0.26324.436` and later. Mode: `entry-unresolved`. New Game is the path to the
 level; Continue shares the same load.

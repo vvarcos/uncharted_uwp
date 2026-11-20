@@ -51,6 +51,9 @@ That creates `runs/status-do-momento-DD-MM-HHmm/` with `run.md` and `captures/`,
   ships no game imagery.
 - Take one capture per distinct gameplay scene, plus one per defect worth naming.
 - Capture with `./xbox/scripts/xbox-screenshot.ps1`, then move the PNG into `captures/`.
+- **Watch the whole run**: `./xbox/scripts/watch.ps1 -Interval 5` captures until the app exits and
+  reports the duration. A run is not over when the first interesting frame appears; it is over when
+  the process is gone.
 - Embed it in `run.md` with a relative link and a caption:
 
   ```markdown
