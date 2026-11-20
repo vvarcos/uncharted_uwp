@@ -69,6 +69,13 @@ copies.
   only same-format copies active (`runs/modo-2-tambem-cai-20-11-1248/`).
 - **The open lead:** `gpu/shim/uwp_depth_copy.cpp` is a complete render-based copy backend and
   nothing calls it. With both transfer classes failing, it has to become the copy path.
+- **Tried:** the render backend (`6a29b73`, `runs/render-copy-tambem-stall-20-11-1311/`). It records
+  every copy correctly (D32 and R32 directions) and the device is lost exactly as with the transfers.
+- **Refuted:** the wait list. The failing submit has an empty wait list and no bridge semaphore
+  (`runs/sem-espera-no-submit-culpado-20-11-1408/`), so no dependency can be blamed.
+- **Next:** log the source/destination `vk::ImageUsageFlags` at the copy site. A missing
+  `TRANSFER_SRC`/`TRANSFER_DST` or `COLOR_ATTACHMENT`/`DEPTH_STENCIL_ATTACHMENT` would fault both
+  mechanisms at once, and Dozen cannot report why (`VK_EXT_device_fault` is absent).
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors
