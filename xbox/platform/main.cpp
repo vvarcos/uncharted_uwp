@@ -534,6 +534,9 @@ static void loader() {
         _putenv_s("BB_UNRESOLVED", "log-fail");
         _putenv_s("BB_VIDEOOUT_DRIVER", "1"); // validated headless real-port bridge
         _putenv_s("BB_GAME_RES", "1280x720"); // Xbox baseline; CoreWindow scales to the swapchain
+        // Xbox button pictures on the console: the game's own texture is replaced by the port's
+        // A/B/X/Y set, so "Press X" means the Xbox X and not the PlayStation square.
+        _putenv_s("BB_BUTTON_PROMPTS", "xbox");
         /* Scripted input for automated runs: runtime_pad.c reads this file (tokens such as "cross")
          * and ignores the live controller while it is set. Creating the file is what presses a
          * button; emptying it releases. */

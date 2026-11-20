@@ -1601,11 +1601,8 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
     };
     if (!sparse_supported && first_page == last_page && ArenaDemandSizing()) {
         if (first_arena && !covers(first_arena, need_start, need_end)) {
-            // bbport: this drain runs on every arena replacement, and gameplay replaces windows
-            // constantly, so its cost is measured per frame by the UWP HUD (GOAL.md phase 1).
-            const auto finish_start = std::chrono::steady_clock::now();
-            scheduler.Finish();
-            BbPort::Counters::NoteSchedulerFinish(std::chrono::steady_clock::now() - finish_start);
+            // The pin/retire path owns synchronisation now. This used to call scheduler.Finish()
+            // here, which cost 511 ms of a 502 ms gameplay frame with 62 replacements per frame.
             BbPort::Counters::NoteArenaReplacement();
             /* BB_ARENA_KEEP=1 (diagnosis): leave the replaced handle alive instead of freeing it. If
              * the Dozen fast-fail on the present submit disappears with this flag, a descriptor or a
@@ -1614,18 +1611,11 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
                 const char* env = std::getenv("BB_ARENA_FREE");
                 return env == nullptr || env[0] != '0';
             }();
-            static const bool packet_retire = [] {
-                const char* env = std::getenv("BB_ARENA_PACKET_RETIRE");
-                return env != nullptr && env[0] == '1';
-            }();
             UnpublishArena(first_arena);
             if (free_replaced) {
-                if (packet_retire || first_arena->bound_refs != 0) {
-                    // A descriptor write in the packet being recorded still holds this handle.
-                    packet_retired_arenas.push_back(first_arena);
-                } else {
-                    const_cast<Buffer*>(first_arena)->buffer.Destroy();
-                }
+                // Never destroy inline: an unpinned arena can still be read by submitted work.
+                // RetirePreviousPacketArenas() drains the queue before destroying.
+                packet_retired_arenas.push_back(first_arena);
             }
             first_arena = nullptr;
         }
