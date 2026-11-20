@@ -618,6 +618,7 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
         return;
     }
 #endif
+#ifdef UNCHARTED_UWP
     static std::atomic<u32> executed_copies{0};
     if (const u32 n = executed_copies.fetch_add(1, std::memory_order_relaxed) + 1; n <= 32 || n % 256 == 0) {
         std::printf("M5 copy #%u executed: fmt %u -> %u %ux%u samples %u/%u\n", n,
