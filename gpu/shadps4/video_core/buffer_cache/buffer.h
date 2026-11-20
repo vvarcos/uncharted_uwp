@@ -98,6 +98,11 @@ struct Buffer {
     explicit Buffer(const Vulkan::Instance& instance, VAddr cpu_addr_, u64 size_bytes_,
                     MemoryType mem_type, std::string_view debug_name = "");
 
+    /// bbport: number of live descriptor bindings that still hold this buffer's handle. An arena
+    /// cannot be destroyed while this is non-zero; the descriptor update that references it is a
+    /// synchronous CPU call inside the packet being recorded.
+    u32 bound_refs{0};
+
     Buffer& operator=(const Buffer&) = delete;
     Buffer(const Buffer&) = delete;
 

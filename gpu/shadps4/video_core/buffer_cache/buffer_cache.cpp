@@ -1543,23 +1543,39 @@ void BufferCache::RetirePreviousPacketArenas() {
     if (packet_retired_arenas.empty()) {
         return;
     }
-    // The preceding packet has now recorded its descriptors and draw/dispatch. Finish drains
-    // those references before destroying its replaced windows. Finishing inside GetArena was
-    // too early: handles of the packet under construction had not been recorded yet.
+    // Only destroy what no descriptor write still references. A buffer whose handle is pinned by the
+    // packet being recorded stays alive; destroying it here was the use-after-free that ended the
+    // level load (M5 bound buffer destroyed -> AV at 0x10 in the driver).
+    bool any_free = false;
+    for (const auto* arena : packet_retired_arenas) {
+        if (arena->bound_refs == 0) {
+            any_free = true;
+            break;
+        }
+    }
+    if (!any_free) {
+        return;
+    }
     scheduler.Finish();
+    std::vector<const Buffer*> still_pinned;
+    still_pinned.reserve(packet_retired_arenas.size());
     u64 released = 0;
     for (const auto* arena : packet_retired_arenas) {
+        if (arena->bound_refs != 0) {
+            still_pinned.push_back(arena);
+            continue;
+        }
         released += arena->size_bytes;
         const_cast<Buffer*>(arena)->buffer.Destroy();
     }
     static u32 reports = 0;
     if (reports++ < 16) {
-        std::printf("M5 arena packet retire: count=%zu released=%llu KiB\n",
-                    packet_retired_arenas.size(),
+        std::printf("M5 arena retire: destroyed=%zu pinned=%zu released=%llu KiB\n",
+                    packet_retired_arenas.size() - still_pinned.size(), still_pinned.size(),
                     static_cast<unsigned long long>(released >> 10));
         std::fflush(stdout);
     }
-    packet_retired_arenas.clear();
+    packet_retired_arenas = std::move(still_pinned);
 }
 #endif
 
@@ -1604,7 +1620,8 @@ const Buffer* BufferCache::GetArena(u64 first_block, u64 last_block) {
             }();
             UnpublishArena(first_arena);
             if (free_replaced) {
-                if (packet_retire) {
+                if (packet_retire || first_arena->bound_refs != 0) {
+                    // A descriptor write in the packet being recorded still holds this handle.
                     packet_retired_arenas.push_back(first_arena);
                 } else {
                     const_cast<Buffer*>(first_arena)->buffer.Destroy();

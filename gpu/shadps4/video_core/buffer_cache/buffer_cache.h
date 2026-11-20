@@ -169,6 +169,20 @@ public:
     void DumpArenas() const;
 #ifdef UNCHARTED_UWP
     // Only at a draw/dispatch packet boundary, before capturing any resource handles.
+    /// bbport: pin/unpin a buffer while a descriptor write holds its handle. See Buffer::bound_refs.
+    void PinBuffer(const Buffer* buffer) {
+        if (buffer != nullptr) {
+            ++const_cast<Buffer*>(buffer)->bound_refs;
+        }
+    }
+    void UnpinBuffer(const Buffer* buffer) {
+        if (buffer != nullptr && buffer->bound_refs > 0) {
+            --const_cast<Buffer*>(buffer)->bound_refs;
+        }
+    }
+
+    /// Destroys retired arenas that nothing references any more. Pinned ones stay alive until their
+    /// descriptor writes are done; no per-draw Finish() is needed any more.
     void RetirePreviousPacketArenas();
 #endif
 

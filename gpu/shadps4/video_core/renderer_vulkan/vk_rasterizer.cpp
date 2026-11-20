@@ -3373,6 +3373,11 @@ void Rasterizer::ResetBindings(bool is_compute) {
                              vk::AccessFlagBits2::eShaderRead | write_flag);
     }
     bound_images.clear();
+#ifdef UNCHARTED_UWP
+    for (const auto& bound : bound_buffers) {
+        buffer_cache.UnpinBuffer(bound.buffer);
+    }
+#endif
     bound_buffers.clear();
     num_checkpoint_buffers = 0;
     needs_barrier = false;
@@ -3717,6 +3722,9 @@ void Rasterizer::BindBuffers(const Shader::Info& stage, const PreparedStage* pre
                 push_data.AddOffset(binding.buffer, adjust);
                 buffer_infos.emplace_back(buffer->Handle(), offset_aligned, size + adjust);
                 bound_buffers.emplace_back(buffer, offset, size, desc.is_written);
+#ifdef UNCHARTED_UWP
+                buffer_cache.PinBuffer(buffer);
+#endif
                 if (g_gpu_checkpoints && num_checkpoint_buffers < std::size(checkpoint_buffers)) {
                     checkpoint_buffers[num_checkpoint_buffers++] = {
                         vsharp.base_address, static_cast<u32>(size), desc.is_written};

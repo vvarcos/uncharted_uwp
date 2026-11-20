@@ -855,14 +855,15 @@ static void sample_host(PadData *d) {
     uint32_t mouse=0;
     int wheel=0, captured=bbgpu_mouse_sample(&mdx,&mdy,&mouse,&wheel);
     if (bbgpu_overlay_captures_input()) return; /* settings menu open: neutral input */
-    /* Scripted runs (BB_PAD_FILE) ignore the player's controller and keyboard: a pad in use on
-     * the same PC reached the test window (BB_PAD_HOST=1 keeps them). */
-    static int scripted=-1;
-    if (scripted<0) {
-        const char *file=getenv("BB_PAD_FILE"), *host=getenv("BB_PAD_HOST");
-        scripted=file && *file && !(host && host[0]=='1');
+    /* Scripted runs (BB_PAD_FILE) add to the player's input, they do not replace it: the console
+     * tests had no controller, but on a real session the pad must keep working. BB_PAD_HOST=0
+     * silences the host pad for an automated run. */
+    static int host_silent=-1;
+    if (host_silent<0) {
+        const char *host=getenv("BB_PAD_HOST");
+        host_silent = host && host[0]=='0';
     }
-    if (scripted) return;
+    if (host_silent) return;
     const uint64_t now=d->timestamp;
     if (wheel>0) wheel_until_us[0]=now+80000;
     if (wheel<0) wheel_until_us[1]=now+80000;
@@ -980,7 +981,15 @@ static void read_inject(void) {
     if (now-last_check<20000) return;
     last_check=now;
     struct stat st;
-    if (stat(path,&st)!=0) return;
+    if (stat(path,&st)!=0 || st.st_size==0) {
+        /* The file was removed or emptied: release everything it was holding. Without this the last
+         * injected state stayed applied forever and the pad looked stuck. */
+        injected.buttons=0;
+        injected.touch_side=-1;
+        for (int i=0;i<4;++i) injected.stick[i]=-1;
+        injected.mouse[0]=injected.mouse[1]=0.0f;
+        return;
+    }
 #ifdef _WIN32
     /* Whole-second mtimes: the size tells two edits within a second apart. */
     if (st.st_mtime==mtime.tv_sec && st.st_size==mtime.tv_nsec) return;
