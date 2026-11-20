@@ -1001,10 +1001,17 @@ void TextureCache::RefreshImage(Image& image) {
 
         const u32 extent_width = mip_pitch ? std::min(mip_pitch, width) : width;
         const u32 extent_height = mip_height ? std::min(mip_height, height) : height;
+        // Vulkan counts bufferRowLength/bufferImageHeight in texel *blocks* for compressed formats.
+        // Passing the pixel pitch (2048 for a 2048-wide BC1) made every row after the first read four
+        // times too far, which is the magenta/cyan noise on every block-compressed material.
+        const u32 copy_row_length =
+            image.info.props.is_block ? std::max(mip_pitch >> 2, 1u) : mip_pitch;
+        const u32 copy_image_height =
+            image.info.props.is_block ? std::max(mip_height >> 2, 1u) : mip_height;
         image_copies.push_back({
             .bufferOffset = mip_offset,
-            .bufferRowLength = mip_pitch,
-            .bufferImageHeight = mip_height,
+            .bufferRowLength = copy_row_length,
+            .bufferImageHeight = copy_image_height,
             .imageSubresource{
                 .aspectMask = image.aspect_mask & ~vk::ImageAspectFlagBits::eStencil,
                 .mipLevel = m,
