@@ -49,17 +49,15 @@ Fixed to `{v1,v2,v3}` + `{v1,v3,v0}`; confirmed on the console.
 - [x] `R 0` on the loading screen proves RECT_LIST is not involved.
 - [x] The BufferCache index read was tried and reverted (it made the coin a thin slice).
 
-### Phase 1 — The level-load crash (blocker)
+### Phase 1 — The level-load crash (done)
 
-The app dies right after the coin: `M5 bound buffer destroyed: guest=0x1100000000 … size=252`,
-then `M5 av-scan: addr=0x10 … found: none in self module`. This is the arena lifetime failure in
-`docs/CONTINUE_LIFETIME.md`, and it happens on **Continue and on New Game** — anywhere a level
-loads.
+The app died right after the coin: `M5 bound buffer destroyed: guest=0x1100000000 … size=252`,
+then `M5 av-scan: addr=0x10 … found: none in self module`. Fixed by pinning an arena while a
+descriptor write holds its handle (`Buffer::bound_refs`) and destroying only unpinned arenas from the
+retire list.
 
-- [ ] Identify which draw/dispatch updates a descriptor after its arena buffer was destroyed.
-- [ ] Make replacement safe for the packet that is still being recorded, not only for submitted
-      work (`BB_ARENA_PACKET_RETIRE=1` was not enough).
-- [ ] Prove it with a level load that reaches the first playable frame.
+- [x] No `bound buffer destroyed` and no `av-scan` on the level load (`runs/gameplay-sem-crash-20-11-0133/`).
+- [x] The app stays alive in gameplay, on the boat deck.
 
 ### Phase 2 — Colours and textures
 
@@ -69,8 +67,10 @@ loads.
 
 ### Phase 3 — Frame rate
 
-- [ ] Attribute the 243–1656 ms of `FIN` per frame: which arena replacement, and why gameplay
-      replaces windows that the menu does not.
+- [x] Remove the per-replacement `scheduler.Finish()`: 62 calls / 511 ms per frame became 0 / 0 ms,
+      and the frame went from ~0.5 s to 292 ms (3.4 FPS).
+- [ ] Attribute the remaining 292 ms: CPU draw recording, the 66 arena rebuilds per frame, or GPU
+      wait.
 - [ ] Intermediate target: 10 FPS in gameplay.
 - [ ] Target: 30 FPS mean, 95th percentile frame time under 40 ms.
 
