@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [continue-com-copias-moeda-e-saida-20-11-1209](continue-com-copias-moeda-e-saida-20-11-1209/run.md) | 20-11 1209 | entry-unresolved | no | 13.1 (coin) | 3 698 MiB | app exited 18 s | copies on: coin whole, load dies |
 | [composite-pulado-tela-preta-20-11-0156](composite-pulado-tela-preta-20-11-0156/run.md) | 20-11 0156 | entry-unresolved | no | 57 (black) | 3 570 MiB | no | skipping the composite = black screen |
 | [copias-ligadas-gpu-stall-20-11-0152](copias-ligadas-gpu-stall-20-11-0152/run.md) | 20-11 0152 | entry-unresolved | no | 45.6 (menu) | 3 441 MiB | **GPU stall** | copies on: AV gone, stall back at submit 25632 |
 | [fin-removido-3-fps-20-11-0139](fin-removido-3-fps-20-11-0139/run.md) | 20-11 0139 | entry-unresolved | **yes** | 3.4 | 4 467 MiB | no | Finish() removed: 511 ms -> 0 ms, 0.5 s -> 292 ms per frame |
@@ -29,4 +30,5 @@ Newest first.
 | [fin-removido-3-fps-20-11-0139](fin-removido-3-fps-20-11-0139/run.md) | 20-11 0139 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [copias-ligadas-gpu-stall-20-11-0152](copias-ligadas-gpu-stall-20-11-0152/run.md) | 20-11 0152 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [composite-pulado-tela-preta-20-11-0156](composite-pulado-tela-preta-20-11-0156/run.md) | 20-11 0156 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [continue-com-copias-moeda-e-saida-20-11-1209](continue-com-copias-moeda-e-saida-20-11-1209/run.md) | 20-11 1209 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
