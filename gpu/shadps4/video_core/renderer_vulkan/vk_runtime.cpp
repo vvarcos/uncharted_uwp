@@ -680,6 +680,19 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
         }
     }
 #endif
+#ifdef UNCHARTED_UWP
+    // Diagnosis: the failing submit has no waits, so the fault is in the work or the resources. A
+    // missing usage flag faults a transfer and a render pass alike, and Dozen cannot report why.
+    static std::atomic<u32> usage_reports{0};
+    if (usage_reports.fetch_add(1, std::memory_order_relaxed) < 12) {
+        std::printf("M5 copy usage: src=%u dst=%u %ux%u\n",
+                    static_cast<u32>(static_cast<VkImageUsageFlags>(src->usage_flags)),
+                    static_cast<u32>(static_cast<VkImageUsageFlags>(dst->usage_flags)),
+                    static_cast<u32>(src->info.size.width),
+                    static_cast<u32>(src->info.size.height));
+        std::fflush(stdout);
+    }
+#endif
     if (src->info.num_samples == 1 && dst->info.num_samples == 1) {
 #ifdef UNCHARTED_UWP
         // Diagnosis: route the same-format copies through the staging path too, so the transfer code
