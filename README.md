@@ -112,6 +112,7 @@ Full details, including the signing key you must generate yourself, are in [BUIL
 ## Documentation
 
 - [GOAL](GOAL.md) — the tracked goal after M5: phases, acceptance criteria, current truth.
+- [PLAN](PLAN.md) — the ordered backlog behind the goal: every item, its test and its fallback.
 - [Runs](runs/README.md) — one entry per console run, with telemetry and screenshots.
 - [BUILD](BUILD.md) — toolchain, dependencies, packaging, signing, deployment.
 - [ARCHITECTURE](ARCHITECTURE.md) — how the loader, renderer, graphics bridge and host fit together.
