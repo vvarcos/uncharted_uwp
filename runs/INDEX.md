@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [perfil-sem-console-20-11-1522](perfil-sem-console-20-11-1522/run.md) | 20-11 1522 | entry-unresolved | no | — | — | **no data: console offline** | console left the network during the profile run |
 | [barreiras-sem-copia-jogo-roda-20-11-1515](barreiras-sem-copia-jogo-roda-20-11-1515/run.md) | 20-11 1515 | entry-unresolved | **yes** | — | — | **plays, magenta** | same barriers + no copy: game runs → content is the crash trigger |
 | [dispatches-pulados-ainda-cai-20-11-1509](dispatches-pulados-ainda-cai-20-11-1509/run.md) | 20-11 1509 | entry-unresolved | no | — | — | device lost | skipping the tail dispatches only changes which program is last |
 | [patch-aplicado-ainda-trava-20-11-1503](patch-aplicado-ainda-trava-20-11-1503/run.md) | 20-11 1503 | entry-unresolved | no | — | — | device lost | patch applied (`applied hash=f4b18264`), still hangs: loop refuted |
@@ -63,4 +64,5 @@ Newest first.
 | [patch-aplicado-ainda-trava-20-11-1503](patch-aplicado-ainda-trava-20-11-1503/run.md) | 20-11 1503 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [dispatches-pulados-ainda-cai-20-11-1509](dispatches-pulados-ainda-cai-20-11-1509/run.md) | 20-11 1509 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [barreiras-sem-copia-jogo-roda-20-11-1515](barreiras-sem-copia-jogo-roda-20-11-1515/run.md) | 20-11 1515 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [perfil-sem-console-20-11-1522](perfil-sem-console-20-11-1522/run.md) | 20-11 1522 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 

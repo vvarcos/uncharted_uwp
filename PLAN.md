@@ -107,7 +107,16 @@ copies.
 - **The same run also settles 2.1's premise:** the scene renders the same way with the copy disabled, so
   the copies are **not** what the colours are missing. The magenta has its own cause.
 - **Next:** profile the GPU with copies on (`BB_GPU_PROFILE=1`) and read the last per-pass timings before
-  the stall; that names the pass that explodes when it sees the copied data.
+  the stall; that names the pass that explodes when it sees the copied data. **Blocked on the console**:
+  it left the network during this run (`runs/perfil-sem-console-20-11-1522/`).
+- **Colour work no longer waits for the copies**, so it can proceed on the stable configuration:
+  - cheapest discriminator: run the same scene with the internal resolution at 1080p
+    (`BB_GAME_RES=1920x1080`). The scene-proxy path only recognises 1920x1080 and 960x540
+    (`SizeDivisor`, `vk_scene_resolution.cpp:73`), so the 720p internal scene takes a different path; if
+    1080p comes out correct, the 720p path is the colour bug.
+  - if both are magenta, trace the lighting draw (`BB_TRACE_BUFFERS=f4b18264`): binding 0 is a 464-byte
+    float block (29 records, stride 16) and the shader reads a loop count at `+72` dwords from it, which
+    does not look like a light list — check whether the buffer order is shifted for that draw.
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors
