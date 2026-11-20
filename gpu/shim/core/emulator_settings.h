@@ -57,7 +57,13 @@ public:
     bool IsFsrEnabled() { static const auto value = Flag("BB_FSR1", false); return value; }
     bool IsHdrAllowed() { static const auto value = Flag("BB_HDR", false); return value; }
     bool IsNullGPU() { static const auto value = Flag("BB_NULL_GPU", false); return value; }
-    bool IsPatchShaders() { return false; }
+    // bbport: shader patches from user/shader/patch were disabled because the console build has no
+    // workflow for them. BB_SHADER_PATCH=1 turns the loader back on, which is what makes a one-run
+    // experiment possible (patch one program, see whether a symptom moves).
+    bool IsPatchShaders() {
+        static const auto value = Flag("BB_SHADER_PATCH", false);
+        return value;
+    }
     bool IsPipelineCacheArchived() { return false; }
     bool IsPipelineCacheEnabled() { static const auto value = Flag("BB_PIPELINE_CACHE", true); return value; }
     bool IsRcasEnabled() { static const auto value = Flag("BB_RCAS", true); return value; }

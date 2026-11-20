@@ -1,0 +1,253 @@
+; SPIR-V
+; Version: 1.6
+; Generator: Khronos; 0
+; Bound: 158
+; Schema: 0
+               OpCapability Shader
+               OpCapability Image1D
+               OpCapability Int64
+               OpCapability Sampled1D
+               OpCapability ImageQuery
+               OpCapability StorageBuffer8BitAccess
+               OpCapability Int8
+               OpCapability Int16
+               OpCapability StorageBuffer16BitAccess
+               OpCapability DenormFlushToZero
+               OpExtension "SPV_KHR_float_controls"
+        %150 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %59 "main" %push_data %gl_FragCoord %gl_FragDepth %fs_img0 %fs_img1
+               OpExecutionMode %59 OriginUpperLeft
+               OpExecutionMode %59 DepthReplacing
+               OpExecutionMode %59 DenormFlushToZero 32
+          %1 = OpString "0xe0eb379a"
+               OpName %void_id "void_id"
+               OpName %bool_id "bool_id"
+               OpName %u8_id "u8_id"
+               OpName %i8_id "i8_id"
+               OpName %u16_id "u16_id"
+               OpName %i16_id "i16_id"
+               OpName %f32_id "f32_id"
+               OpName %i32_id "i32_id"
+               OpName %u32_id "u32_id"
+               OpName %u64_id "u64_id"
+               OpName %f32vec2_id "f32vec2_id"
+               OpName %i32vec2_id "i32vec2_id"
+               OpName %u32vec2_id "u32vec2_id"
+               OpName %bvec2_id "bvec2_id"
+               OpName %f32vec3_id "f32vec3_id"
+               OpName %i32vec3_id "i32vec3_id"
+               OpName %u32vec3_id "u32vec3_id"
+               OpName %bvec3_id "bvec3_id"
+               OpName %f32vec4_id "f32vec4_id"
+               OpName %i32vec4_id "i32vec4_id"
+               OpName %u32vec4_id "u32vec4_id"
+               OpName %bvec4_id "bvec4_id"
+               OpName %input_f32 "input_f32"
+               OpName %input_u32 "input_u32"
+               OpName %input_s32 "input_s32"
+               OpName %output_f32 "output_f32"
+               OpName %output_u32 "output_u32"
+               OpName %output_s32 "output_s32"
+               OpName %full_result_i32x2 "full_result_i32x2"
+               OpName %full_result_u32x2 "full_result_u32x2"
+               OpName %frexp_result_f32 "frexp_result_f32"
+               OpName %AuxData "AuxData"
+               OpMemberName %AuxData 0 "xoffset"
+               OpMemberName %AuxData 1 "yoffset"
+               OpMemberName %AuxData 2 "xscale"
+               OpMemberName %AuxData 3 "yscale"
+               OpMemberName %AuxData 4 "ud_regs0"
+               OpMemberName %AuxData 5 "ud_regs1"
+               OpMemberName %AuxData 6 "ud_regs2"
+               OpMemberName %AuxData 7 "ud_regs3"
+               OpMemberName %AuxData 8 "buf_offsets0"
+               OpMemberName %AuxData 9 "buf_offsets1"
+               OpMemberName %AuxData 10 "buf_offsets2"
+               OpMemberName %AuxData 11 "motion_param"
+               OpMemberName %AuxData 12 "scene_size"
+               OpName %push_data "push_data"
+               OpName %fs_img0 "fs_img0"
+               OpName %fs_img1 "fs_img1"
+               OpDecorate %AuxData Block
+               OpMemberDecorate %AuxData 0 Offset 0
+               OpMemberDecorate %AuxData 1 Offset 4
+               OpMemberDecorate %AuxData 2 Offset 8
+               OpMemberDecorate %AuxData 3 Offset 12
+               OpMemberDecorate %AuxData 4 Offset 16
+               OpMemberDecorate %AuxData 5 Offset 32
+               OpMemberDecorate %AuxData 6 Offset 48
+               OpMemberDecorate %AuxData 7 Offset 64
+               OpMemberDecorate %AuxData 8 Offset 80
+               OpMemberDecorate %AuxData 9 Offset 96
+               OpMemberDecorate %AuxData 10 Offset 112
+               OpMemberDecorate %AuxData 11 Offset 120
+               OpMemberDecorate %AuxData 12 Offset 124
+               OpDecorate %gl_FragCoord BuiltIn FragCoord
+               OpDecorate %gl_FragDepth BuiltIn FragDepth
+               OpDecorate %fs_img0 Binding 0
+               OpDecorate %fs_img0 DescriptorSet 0
+               OpDecorate %fs_img1 Binding 1
+               OpDecorate %fs_img1 DescriptorSet 0
+    %void_id = OpTypeVoid
+    %bool_id = OpTypeBool
+      %u8_id = OpTypeInt 8 0
+      %i8_id = OpTypeInt 8 1
+     %u16_id = OpTypeInt 16 0
+     %i16_id = OpTypeInt 16 1
+     %f32_id = OpTypeFloat 32
+     %i32_id = OpTypeInt 32 1
+     %u32_id = OpTypeInt 32 0
+     %u64_id = OpTypeInt 64 0
+ %f32vec2_id = OpTypeVector %f32_id 2
+ %i32vec2_id = OpTypeVector %i32_id 2
+ %u32vec2_id = OpTypeVector %u32_id 2
+   %bvec2_id = OpTypeVector %bool_id 2
+ %f32vec3_id = OpTypeVector %f32_id 3
+ %i32vec3_id = OpTypeVector %i32_id 3
+ %u32vec3_id = OpTypeVector %u32_id 3
+   %bvec3_id = OpTypeVector %bool_id 3
+ %f32vec4_id = OpTypeVector %f32_id 4
+ %i32vec4_id = OpTypeVector %i32_id 4
+ %u32vec4_id = OpTypeVector %u32_id 4
+   %bvec4_id = OpTypeVector %bool_id 4
+       %true = OpConstantTrue %bool_id
+      %false = OpConstantFalse %bool_id
+    %u8_id_1 = OpConstant %u8_id 1
+    %u8_id_0 = OpConstant %u8_id 0
+   %u16_id_0 = OpConstant %u16_id 0
+   %u32_id_1 = OpConstant %u32_id 1
+   %u32_id_0 = OpConstant %u32_id 0
+   %f32_id_0 = OpConstant %f32_id 0
+   %u64_id_1 = OpConstant %u64_id 1
+   %u64_id_0 = OpConstant %u64_id 0
+%f32_id_6_28318548 = OpConstant %f32_id 6.28318548
+  %input_f32 = OpTypePointer Input %f32_id
+  %input_u32 = OpTypePointer Input %u32_id
+  %input_s32 = OpTypePointer Input %i32_id
+ %output_f32 = OpTypePointer Output %f32_id
+ %output_u32 = OpTypePointer Output %u32_id
+ %output_s32 = OpTypePointer Output %i32_id
+%full_result_i32x2 = OpTypeStruct %i32_id %i32_id
+%full_result_u32x2 = OpTypeStruct %u32_id %u32_id
+%frexp_result_f32 = OpTypeStruct %f32_id %i32_id
+    %AuxData = OpTypeStruct %f32_id %f32_id %f32_id %f32_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec4_id %u32vec2_id %u32_id %u32_id
+%_ptr_PushConstant_AuxData = OpTypePointer PushConstant %AuxData
+%_ptr_Input_f32vec4_id = OpTypePointer Input %f32vec4_id
+         %50 = OpTypeImage %u32_id 2D 0 0 0 1 Unknown
+%_ptr_UniformConstant_50 = OpTypePointer UniformConstant %50
+         %53 = OpTypeSampledImage %50
+         %54 = OpTypeImage %f32_id 2D 0 0 0 1 Unknown
+%_ptr_UniformConstant_54 = OpTypePointer UniformConstant %54
+         %57 = OpTypeSampledImage %54
+         %58 = OpTypeFunction %void_id
+  %u32_id_12 = OpConstant %u32_id 12
+%_ptr_PushConstant_u32_id = OpTypePointer PushConstant %u32_id
+%u32_id_65535 = OpConstant %u32_id 65535
+%u32_id_1920 = OpConstant %u32_id 1920
+  %u32_id_16 = OpConstant %u32_id 16
+%u32_id_1080 = OpConstant %u32_id 1080
+   %u32_id_2 = OpConstant %u32_id 2
+%u32_id_1065353216 = OpConstant %u32_id 1065353216
+  %push_data = OpVariable %_ptr_PushConstant_AuxData PushConstant
+%gl_FragCoord = OpVariable %_ptr_Input_f32vec4_id Input
+%gl_FragDepth = OpVariable %output_f32 Output
+    %fs_img0 = OpVariable %_ptr_UniformConstant_50 UniformConstant
+    %fs_img1 = OpVariable %_ptr_UniformConstant_54 UniformConstant
+         %59 = OpFunction %void_id None %58
+         %60 = OpLabel
+         %64 = OpAccessChain %input_f32 %gl_FragCoord %u32_id_0
+         %65 = OpLoad %f32_id %64
+         %68 = OpAccessChain %_ptr_PushConstant_u32_id %push_data %u32_id_12
+         %69 = OpLoad %u32_id %68
+         %71 = OpBitwiseAnd %u32_id %69 %u32_id_65535
+         %73 = OpIEqual %bool_id %71 %u32_id_0
+         %74 = OpSelect %u32_id %73 %u32_id_1920 %71
+         %75 = OpConvertUToF %f32_id %74
+         %76 = OpConvertUToF %f32_id %u32_id_1920
+         %77 = OpFDiv %f32_id %76 %75
+         %78 = OpFMul %f32_id %65 %77
+         %79 = OpAccessChain %input_f32 %gl_FragCoord %u32_id_1
+         %80 = OpLoad %f32_id %79
+         %81 = OpAccessChain %_ptr_PushConstant_u32_id %push_data %u32_id_12
+         %82 = OpLoad %u32_id %81
+         %84 = OpShiftRightLogical %u32_id %82 %u32_id_16
+         %86 = OpIEqual %bool_id %84 %u32_id_0
+         %87 = OpSelect %u32_id %86 %u32_id_1080 %84
+         %88 = OpConvertUToF %f32_id %87
+         %89 = OpConvertUToF %f32_id %u32_id_1080
+         %90 = OpFDiv %f32_id %89 %88
+         %91 = OpFMul %f32_id %80 %90
+         %92 = OpConvertFToS %u32_id %91
+         %93 = OpConvertFToS %u32_id %78
+         %95 = OpIMul %u32_id %92 %u32_id_2
+         %96 = OpIMul %u32_id %93 %u32_id_2
+         %97 = OpIAdd %u32_id %95 %u32_id_1
+         %98 = OpIAdd %u32_id %96 %u32_id_1
+         %99 = OpCompositeConstruct %u32vec2_id %98 %97
+        %100 = OpLoad %50 %fs_img0
+        %101 = OpImageFetch %u32vec4_id %100 %99 Lod %u32_id_0
+        %102 = OpBitcast %f32vec4_id %101
+        %103 = OpCompositeExtract %f32_id %102 0
+        %104 = OpBitcast %u32_id %103
+        %105 = OpCompositeConstruct %u32vec2_id %98 %95
+        %106 = OpLoad %50 %fs_img0
+        %107 = OpImageFetch %u32vec4_id %106 %105 Lod %u32_id_0
+        %108 = OpBitcast %f32vec4_id %107
+        %109 = OpCompositeExtract %f32_id %108 0
+        %110 = OpBitcast %u32_id %109
+        %111 = OpCompositeConstruct %u32vec2_id %96 %97
+        %112 = OpLoad %50 %fs_img0
+        %113 = OpImageFetch %u32vec4_id %112 %111 Lod %u32_id_0
+        %114 = OpBitcast %f32vec4_id %113
+        %115 = OpCompositeExtract %f32_id %114 0
+        %116 = OpBitcast %u32_id %115
+        %117 = OpCompositeConstruct %u32vec2_id %96 %95
+        %118 = OpLoad %50 %fs_img0
+        %119 = OpImageFetch %u32vec4_id %118 %117 Lod %u32_id_0
+        %120 = OpBitcast %f32vec4_id %119
+        %121 = OpCompositeExtract %f32_id %120 0
+        %122 = OpBitcast %u32_id %121
+        %123 = OpBitwiseAnd %u32_id %u32_id_16 %104
+        %124 = OpBitwiseAnd %u32_id %u32_id_16 %116
+        %125 = OpIEqual %bool_id %u32_id_0 %123
+        %126 = OpIEqual %bool_id %u32_id_0 %124
+        %127 = OpBitwiseAnd %u32_id %u32_id_16 %110
+        %128 = OpLogicalAnd %bool_id %126 %125
+        %129 = OpIEqual %bool_id %u32_id_0 %127
+        %130 = OpBitwiseAnd %u32_id %u32_id_16 %122
+        %131 = OpLogicalAnd %bool_id %129 %128
+        %132 = OpIEqual %bool_id %u32_id_0 %130
+        %133 = OpLogicalAnd %bool_id %132 %131
+               OpSelectionMerge %62 None
+               OpBranchConditional %133 %61 %62
+         %61 = OpLabel
+        %134 = OpCompositeConstruct %u32vec2_id %98 %97
+        %135 = OpLoad %54 %fs_img1
+        %136 = OpImageFetch %f32vec4_id %135 %134 Lod %u32_id_0
+        %137 = OpCompositeExtract %f32_id %136 0
+        %138 = OpCompositeConstruct %u32vec2_id %96 %97
+        %139 = OpLoad %54 %fs_img1
+        %140 = OpImageFetch %f32vec4_id %139 %138 Lod %u32_id_0
+        %141 = OpCompositeExtract %f32_id %140 0
+        %142 = OpCompositeConstruct %u32vec2_id %98 %95
+        %143 = OpLoad %54 %fs_img1
+        %144 = OpImageFetch %f32vec4_id %143 %142 Lod %u32_id_0
+        %145 = OpCompositeExtract %f32_id %144 0
+        %146 = OpCompositeConstruct %u32vec2_id %96 %95
+        %147 = OpLoad %54 %fs_img1
+        %148 = OpImageFetch %f32vec4_id %147 %146 Lod %u32_id_0
+        %149 = OpCompositeExtract %f32_id %148 0
+        %151 = OpExtInst %f32_id %150 FMin %137 %141
+        %152 = OpExtInst %f32_id %150 FMin %151 %145
+        %153 = OpExtInst %f32_id %150 FMin %149 %152
+        %154 = OpBitcast %u32_id %153
+               OpBranch %62
+         %62 = OpLabel
+        %155 = OpPhi %u32_id %154 %61 %u32_id_1065353216 %60
+        %156 = OpBitcast %f32_id %155
+               OpStore %gl_FragDepth %156
+               OpBranch %63
+         %63 = OpLabel
+               OpReturn
+               OpFunctionEnd

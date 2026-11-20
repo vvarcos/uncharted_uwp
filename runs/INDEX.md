@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [laco-de-luz-limitado-por-buffer-20-11-1448](laco-de-luz-limitado-por-buffer-20-11-1448/run.md) | 20-11 1448 | entry-unresolved | no | — | — | device lost | last PS before the hang loops over a light count read from a buffer |
 | [shader-do-jogo-copia-e-ainda-trava-20-11-1441](shader-do-jogo-copia-e-ainda-trava-20-11-1441/run.md) | 20-11 1441 | entry-unresolved | no | — | — | device lost | guest shader copies, no host copy, same hang |
 | [gravacao-na-thread-chamadora-tambem-cai-20-11-1437](gravacao-na-thread-chamadora-tambem-cai-20-11-1437/run.md) | 20-11 1437 | entry-unresolved | no | — | — | device lost | not a recording-order race |
 | [dump-do-submit-que-trava-20-11-1432](dump-do-submit-que-trava-20-11-1432/run.md) | 20-11 1432 | entry-unresolved | no | — | — | device lost | hung submit ends in draws/dispatches; no shader loop |
@@ -53,4 +54,5 @@ Newest first.
 | [dump-do-submit-que-trava-20-11-1432](dump-do-submit-que-trava-20-11-1432/run.md) | 20-11 1432 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [gravacao-na-thread-chamadora-tambem-cai-20-11-1437](gravacao-na-thread-chamadora-tambem-cai-20-11-1437/run.md) | 20-11 1437 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [shader-do-jogo-copia-e-ainda-trava-20-11-1441](shader-do-jogo-copia-e-ainda-trava-20-11-1441/run.md) | 20-11 1441 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [laco-de-luz-limitado-por-buffer-20-11-1448](laco-de-luz-limitado-por-buffer-20-11-1448/run.md) | 20-11 1448 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
