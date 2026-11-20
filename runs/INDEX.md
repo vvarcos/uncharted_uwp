@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [copias-sem-staging-tambem-cai-20-11-1244](copias-sem-staging-tambem-cai-20-11-1244/run.md) | 20-11 1244 | entry-unresolved | no | 13.6 (coin) | 3 821 MiB | app exited 18 s | staging not the blocker |
 | [block-row-always-on-fecha-janela-20-11-1232](block-row-always-on-fecha-janela-20-11-1232/run.md) | 20-11 1232 | entry-unresolved | parcial (749 frames) | — | — | assert + sem janela | mudança agora opt-in; revertida em 1530 |
 | [continue-com-copias-moeda-e-saida-20-11-1209](continue-com-copias-moeda-e-saida-20-11-1209/run.md) | 20-11 1209 | entry-unresolved | no | 13.1 (coin) | 3 698 MiB | app exited 18 s | copies on: coin whole, load dies |
 | [composite-pulado-tela-preta-20-11-0156](composite-pulado-tela-preta-20-11-0156/run.md) | 20-11 0156 | entry-unresolved | no | 57 (black) | 3 570 MiB | no | skipping the composite = black screen |
@@ -33,4 +34,5 @@ Newest first.
 | [composite-pulado-tela-preta-20-11-0156](composite-pulado-tela-preta-20-11-0156/run.md) | 20-11 0156 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [continue-com-copias-moeda-e-saida-20-11-1209](continue-com-copias-moeda-e-saida-20-11-1209/run.md) | 20-11 1209 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [block-row-always-on-fecha-janela-20-11-1232](block-row-always-on-fecha-janela-20-11-1232/run.md) | 20-11 1232 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [copias-sem-staging-tambem-cai-20-11-1244](copias-sem-staging-tambem-cai-20-11-1244/run.md) | 20-11 1244 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
