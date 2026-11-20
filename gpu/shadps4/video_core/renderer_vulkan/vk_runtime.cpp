@@ -619,6 +619,37 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
     }
 #endif
 #ifdef UNCHARTED_UWP
+    // Diagnosis: with the copies skipped the function returns before any layout transition, so
+    // "no copy" and "no barrier" have never been separated. This keeps exactly the transfer barrier
+    // pair the real copy uses and records nothing: if the load still ends, the barrier sequence is
+    // the fault; if it survives, the copied content is.
+    static const bool barriers_only = [] {
+        const char* env = std::getenv("BB_COPY_BARRIERS_ONLY");
+        return env != nullptr && env[0] == '1';
+    }();
+    if (barriers_only) {
+        scheduler.EndRendering();
+        bool needs_flush =
+            Transit(src, vk::ImageLayout::eTransferSrcOptimal, vk::PipelineStageFlagBits2::eCopy,
+                    vk::AccessFlagBits2::eTransferRead);
+        needs_flush |= Transit(dst, vk::ImageLayout::eTransferDstOptimal,
+                               vk::PipelineStageFlagBits2::eCopy, vk::AccessFlagBits2::eTransferWrite);
+        if (needs_flush) {
+            FlushBarriers();
+        }
+        static std::atomic<u32> reported{0};
+        if (reported.fetch_add(1, std::memory_order_relaxed) < 8) {
+            std::printf("M5 copy barriers only: fmt %u -> %u %ux%u\n",
+                        static_cast<u32>(src->info.pixel_format),
+                        static_cast<u32>(dst->info.pixel_format),
+                        static_cast<u32>(src->info.size.width),
+                        static_cast<u32>(src->info.size.height));
+            std::fflush(stdout);
+        }
+        return;
+    }
+#endif
+#ifdef UNCHARTED_UWP
     static std::atomic<u32> executed_copies{0};
     if (const u32 n = executed_copies.fetch_add(1, std::memory_order_relaxed) + 1; n <= 32 || n % 256 == 0) {
         std::printf("M5 copy #%u executed: fmt %u -> %u %ux%u samples %u/%u\n", n,

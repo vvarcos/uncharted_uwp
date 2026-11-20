@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [dispatches-pulados-ainda-cai-20-11-1509](dispatches-pulados-ainda-cai-20-11-1509/run.md) | 20-11 1509 | entry-unresolved | no | — | — | device lost | skipping the tail dispatches only changes which program is last |
 | [patch-aplicado-ainda-trava-20-11-1503](patch-aplicado-ainda-trava-20-11-1503/run.md) | 20-11 1503 | entry-unresolved | no | — | — | device lost | patch applied (`applied hash=f4b18264`), still hangs: loop refuted |
 | [patch-de-shader-sem-marcador-20-11-1458](patch-de-shader-sem-marcador-20-11-1458/run.md) | 20-11 1458 | entry-unresolved | no | — | — | device lost | patch experiment blind: no marker in loader.log |
 | [laco-de-luz-limitado-por-buffer-20-11-1448](laco-de-luz-limitado-por-buffer-20-11-1448/run.md) | 20-11 1448 | entry-unresolved | no | — | — | device lost | last PS before the hang loops over a light count read from a buffer |
@@ -59,4 +60,5 @@ Newest first.
 | [laco-de-luz-limitado-por-buffer-20-11-1448](laco-de-luz-limitado-por-buffer-20-11-1448/run.md) | 20-11 1448 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [patch-de-shader-sem-marcador-20-11-1458](patch-de-shader-sem-marcador-20-11-1458/run.md) | 20-11 1458 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [patch-aplicado-ainda-trava-20-11-1503](patch-aplicado-ainda-trava-20-11-1503/run.md) | 20-11 1503 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [dispatches-pulados-ainda-cai-20-11-1509](dispatches-pulados-ainda-cai-20-11-1509/run.md) | 20-11 1509 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
