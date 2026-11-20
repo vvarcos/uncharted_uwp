@@ -4,6 +4,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cstring>
 #include <map>
 #include <mutex>
@@ -3180,6 +3181,65 @@ void Rasterizer::ResolveVertexBuffers(const GraphicsPipeline* pipeline,
                           (unsigned long long)vb.base_address, u32(vb.GetSize()),
                           u32(vb.GetStride()));
             FrameCapture::Note(note);
+        }
+    }
+
+    // bbport diagnosis: BB_VERTEX_CHECK=<N> also enables this cheap, bounded check at the point
+    // vertex streams are assembled for upload. The frame-sampled "Vertex check" in Draw only reads
+    // VS buffers of stride 12..64 that are fully mapped and *not* GPU-written, and skips ranges that
+    // are clamped short. A single exploding vertex on world geometry is more often that kind of
+    // out-of-range read (a bad index reading past the stream) or a stream the GPU wrote; report the
+    // offending stream here, named by the draw's VS hash. Bounded and off by default: it only runs
+    // when BB_VERTEX_CHECK is set, and caps both the work per stream and the number of log lines.
+    static const bool vertex_suspect_check = [] {
+        const char* env = std::getenv("BB_VERTEX_CHECK");
+        return env && env[0] != '\0';
+    }();
+    if (vertex_suspect_check) {
+        const u32 draw_hash = u32(pipeline->GetStage(Shader::SwStage::Vertex).pgm_hash);
+        static std::atomic<u32> reports{0};
+        constexpr u32 MaxReports = 32;
+        constexpr u32 MaxElements = 16384;
+        for (const auto& vb : guest_buffers) {
+            const VAddr addr = vb.base_address;
+            const u32 size = vb.GetSize();
+            const u32 stride = vb.GetStride();
+            if (addr == 0 || size == 0) {
+                continue;
+            }
+            const char* reason = nullptr;
+            u32 offset = 0;
+            if (!memory->IsValidGpuMapping(addr, 0) ||
+                memory->ClampRangeSize(addr, size) != size) {
+                reason = "unmapped";
+            } else if (stride != 0 && (stride % 4 || size < stride)) {
+                reason = "stride";
+            } else if (stride >= 12 && stride % 4 == 0) {
+                // NaN/Inf/impossible head position of an element, matching the frame-sampled check.
+                const u32 elements = std::min<u32>(size / stride, MaxElements);
+                const auto* f = reinterpret_cast<const float*>(addr);
+                for (u32 e = 0; e < elements; ++e) {
+                    const float* v = f + e * (stride / 4);
+                    if (!(std::fabs(v[0]) < 1e5f && std::fabs(v[1]) < 1e5f &&
+                          std::fabs(v[2]) < 1e5f)) {
+                        reason = (std::isnan(v[0]) || std::isnan(v[1]) || std::isnan(v[2]) ||
+                                  std::isinf(v[0]) || std::isinf(v[1]) || std::isinf(v[2]))
+                                     ? "nan_inf"
+                                     : "huge";
+                        offset = e * stride;
+                        break;
+                    }
+                }
+            }
+            if (reason && reports.fetch_add(1, std::memory_order_relaxed) < MaxReports) {
+                char line[192];
+                std::snprintf(line, sizeof(line),
+                              "M5 vertex suspect: addr=%#llx stride=%u offset=%u draw_hash=%08x "
+                              "reason=%s",
+                              static_cast<unsigned long long>(addr), stride, offset, draw_hash,
+                              reason);
+                bb_log_raw(line);
+            }
         }
     }
 
