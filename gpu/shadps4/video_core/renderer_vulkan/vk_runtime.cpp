@@ -17,6 +17,9 @@
 #include "video_core/renderer_vulkan/vk_scheduler.h"
 #include "video_core/texture_cache/blit_helper.h"
 #include "video_core/texture_cache/image.h"
+#ifdef UNCHARTED_UWP
+#include "uwp_depth_copy.h"
+#endif
 
 #include <vulkan/vulkan_format_traits.hpp>
 
@@ -606,6 +609,56 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
                     static_cast<u32>(src->info.size.height),
                     static_cast<u32>(src->info.num_samples),
                     static_cast<u32>(dst->info.num_samples));        std::fflush(stdout);
+    }
+#endif
+#ifdef UNCHARTED_UWP
+    // bbport: render-based copy. Both transfer classes (same-format and depth<->colour) end the level
+    // load at the same second, so the copy is done with a full-screen draw instead. The backend in
+    // gpu/shim/uwp_depth_copy.cpp existed since 50f8603 and nothing called it.
+    static const bool render_copy = [] {
+        const char* env = std::getenv("BB_DEPTH_COPY_RENDER");
+        return env != nullptr && env[0] == '1';
+    }();
+    if (render_copy && src->info.num_samples == 1 && dst->info.num_samples == 1) {
+        static std::unique_ptr<UwpDepthCopy> backend;
+        if (!backend) {
+            backend = std::make_unique<UwpDepthCopy>(instance, scheduler);
+        }
+        if (backend->IsValid()) {
+            const vk::Extent2D extent{std::min(src->info.size.width, dst->info.size.width),
+                                      std::min(src->info.size.height, dst->info.size.height)};
+            const vk::Image src_handle = src->GetImage();
+            const vk::Image dst_handle = dst->GetImage();
+            const vk::Format src_format = src->info.pixel_format;
+            const vk::Format dst_format = dst->info.pixel_format;
+            Transit(src, vk::ImageLayout::eShaderReadOnlyOptimal,
+                    vk::PipelineStageFlagBits2::eFragmentShader, vk::AccessFlagBits2::eShaderRead);
+            if (dst->info.props.is_depth) {
+                Transit(dst, vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                        vk::PipelineStageFlagBits2::eEarlyFragmentTests |
+                            vk::PipelineStageFlagBits2::eLateFragmentTests,
+                        vk::AccessFlagBits2::eDepthStencilAttachmentWrite);
+            } else {
+                Transit(dst, vk::ImageLayout::eColorAttachmentOptimal,
+                        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+                        vk::AccessFlagBits2::eColorAttachmentWrite);
+            }
+            UwpDepthCopy* const copy = backend.get();
+            scheduler.Record([copy, src_handle, dst_handle, src_format, dst_format,
+                              extent](vk::CommandBuffer cmdbuf) {
+                copy->Copy(cmdbuf, src_handle, dst_handle, src_format, dst_format, extent);
+            });
+            // The next use decides the layout; the image cache tracks what was just left.
+            Transit(dst, vk::ImageLayout::eShaderReadOnlyOptimal,
+                    vk::PipelineStageFlagBits2::eFragmentShader, vk::AccessFlagBits2::eShaderRead);
+            static std::atomic<u32> reported{0};
+            if (reported.fetch_add(1, std::memory_order_relaxed) < 8) {
+                std::printf("M5 render copy: %ux%u fmt %u -> %u\n", extent.width, extent.height,
+                            static_cast<u32>(src_format), static_cast<u32>(dst_format));
+                std::fflush(stdout);
+            }
+            return;
+        }
     }
 #endif
     if (src->info.num_samples == 1 && dst->info.num_samples == 1) {
