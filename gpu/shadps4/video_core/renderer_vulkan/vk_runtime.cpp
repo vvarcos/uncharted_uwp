@@ -598,8 +598,26 @@ void Runtime::CopyColorAndDepth(VideoCore::Image* src, VideoCore::Image* dst) {
         return;
     }
 #ifdef UNCHARTED_UWP
-    // Proof line for the opposite direction: the copy really executed (and which path it took),
-    // so "no hang" cannot be confused with "the copy was never reached".
+    // Diagnosis: the device loss shows up as a wait on a dead device (counter_result=-4) once the
+    // copies run. The two sizes involved are 2048x2048 (D32) and 1280x720 (R32<->D32); dropping only
+    // the 2K ones says which of them kills the GPU.
+    static const bool skip_2k = [] {
+        const char* env = std::getenv("BB_COPY_SKIP_2K");
+        return env != nullptr && env[0] == '1';
+    }();
+    if (skip_2k && (src->info.size.width >= 2048 || src->info.size.height >= 2048)) {
+        static std::atomic<u32> reported{0};
+        if (reported.fetch_add(1, std::memory_order_relaxed) < 8) {
+            std::printf("M5 copy 2K skipped: fmt %u -> %u %ux%u\n",
+                        static_cast<u32>(src->info.pixel_format),
+                        static_cast<u32>(dst->info.pixel_format),
+                        static_cast<u32>(src->info.size.width),
+                        static_cast<u32>(src->info.size.height));
+            std::fflush(stdout);
+        }
+        return;
+    }
+#endif
     static std::atomic<u32> executed_copies{0};
     if (const u32 n = executed_copies.fetch_add(1, std::memory_order_relaxed) + 1; n <= 32 || n % 256 == 0) {
         std::printf("M5 copy #%u executed: fmt %u -> %u %ux%u samples %u/%u\n", n,
