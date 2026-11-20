@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [vertex-check-acha-buffer-zerado-20-11-1649](vertex-check-acha-buffer-zerado-20-11-1649/run.md) | 20-11 1649 | entry-unresolved | no | — | — | exit sem crash | VS `fadcd6fe`: streams de 4096 elementos quase todos zero, 2 insanos no buffer 2 |
 | [sobram-vertice-e-texto-20-11-1617](sobram-vertice-e-texto-20-11-1617/run.md) | 20-11 1617 | entry-unresolved | **yes** | — | — | **plays** | user: only an occasional exploded vertex and the doubled prompt text remain |
 | [perfil-sem-console-20-11-1522](perfil-sem-console-20-11-1522/run.md) | 20-11 1522 | entry-unresolved | no | — | — | **no data: console offline** | console left the network during the profile run |
 | [barreiras-sem-copia-jogo-roda-20-11-1515](barreiras-sem-copia-jogo-roda-20-11-1515/run.md) | 20-11 1515 | entry-unresolved | **yes** | — | — | **plays, magenta** | same barriers + no copy: game runs → content is the crash trigger |
@@ -67,4 +68,5 @@ Newest first.
 | [barreiras-sem-copia-jogo-roda-20-11-1515](barreiras-sem-copia-jogo-roda-20-11-1515/run.md) | 20-11 1515 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [perfil-sem-console-20-11-1522](perfil-sem-console-20-11-1522/run.md) | 20-11 1522 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [sobram-vertice-e-texto-20-11-1617](sobram-vertice-e-texto-20-11-1617/run.md) | 20-11 1617 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [vertex-check-acha-buffer-zerado-20-11-1649](vertex-check-acha-buffer-zerado-20-11-1649/run.md) | 20-11 1649 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 
