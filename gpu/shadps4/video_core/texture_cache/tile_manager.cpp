@@ -306,15 +306,22 @@ void TileManager::RecordTilingDispatch(vk::Pipeline pipeline, const vk::Descript
 
 std::pair<const Buffer*, u64> TileManager::DetileImage(const VideoCore::Buffer* in_buffer,
                                                        u64 in_offset, const ImageInfo& info) {
-    // bbport: one raw line per tiling shape, so a console log says whether the detile actually runs
-    // for the formats on screen (the LOG_INFO above is filtered out of loader.log).
+    // bbport: raw lines so a console log says whether the detile runs for the formats on screen. The
+    // block (BC) shapes are the ones that matter for the magenta scene, so they are never skipped by
+    // the report cap.
     {
-        static std::atomic<u32> reports{0};
-        if (reports.fetch_add(1, std::memory_order_relaxed) < 24) {
-            std::printf("M5 detile: tiled=%d tile_mode=%u bits=%u block=%d %ux%u levels=%u\n",
+        static std::atomic<u32> block_reports{0};
+        static std::atomic<u32> other_reports{0};
+        const bool report = info.props.is_block
+                                ? block_reports.fetch_add(1, std::memory_order_relaxed) < 16
+                                : other_reports.fetch_add(1, std::memory_order_relaxed) < 8;
+        if (report) {
+            const auto& m0 = info.mips_layout[0];
+            std::printf("M5 detile: tiled=%d tile_mode=%u bits=%u block=%d %ux%u levels=%u "
+                        "mip0 pitch=%u height=%u size=%u\n",
                         int(info.props.is_tiled), u32(info.tile_mode), u32(info.num_bits),
                         int(info.props.is_block), info.size.width, info.size.height,
-                        u32(info.resources.levels));
+                        u32(info.resources.levels), m0.pitch, m0.height, m0.size);
             std::fflush(stdout);
         }
     }
