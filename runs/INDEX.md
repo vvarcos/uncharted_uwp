@@ -8,6 +8,7 @@ Newest first.
 
 | Run (folder) | Date, hour | Mode | Gameplay? | Mean FPS | Peak RAM | Device loss | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| [unidades-bc-refutadas-20-11-1429](unidades-bc-refutadas-20-11-1429/run.md) | 20-11 1429 | entry-unresolved | no | — | — | assert no boot | blocks vs pixels: Dozen wants pixels, blocks give `OUT_OF_HOST_MEMORY` |
 | [sync-nao-salva-o-copy-20-11-1418](sync-nao-salva-o-copy-20-11-1418/run.md) | 20-11 1418 | entry-unresolved | no | — | — | device lost | image lifetime refuted; the command faults |
 | [sem-espera-no-submit-culpado-20-11-1408](sem-espera-no-submit-culpado-20-11-1408/run.md) | 20-11 1408 | entry-unresolved | no | — | — | device lost | failing submit has no waits; fault is in the resources |
 | [qualquer-copia-derruba-20-11-1343](qualquer-copia-derruba-20-11-1343/run.md) | 20-11 1343 | entry-unresolved | no | — | — | **device lost** | any submitted copy kills the device |
@@ -45,4 +46,5 @@ Newest first.
 | [qualquer-copia-derruba-20-11-1343](qualquer-copia-derruba-20-11-1343/run.md) | 20-11 1343 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [sem-espera-no-submit-culpado-20-11-1408](sem-espera-no-submit-culpado-20-11-1408/run.md) | 20-11 1408 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 | [sync-nao-salva-o-copy-20-11-1418](sync-nao-salva-o-copy-20-11-1418/run.md) | 20-11 1418 | entry-unresolved | not run yet | not measured | not measured | not measured | |
+| [unidades-bc-refutadas-20-11-1429](unidades-bc-refutadas-20-11-1429/run.md) | 20-11 1429 | entry-unresolved | not run yet | not measured | not measured | not measured | |
 

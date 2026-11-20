@@ -63,7 +63,9 @@ copies.
 - **Refuted:** dividing the upload row length into blocks. With it on, the app presents 749 frames
   then fails a `VkResult` check, and later launches never present
   (`runs/block-row-always-on-fecha-janela-20-11-1232/`). The switch `BB_BLOCK_ROW_BLOCKS=1` remains
-  only to avoid repeating the experiment.
+  only to avoid repeating the experiment. With *both* sides converted (copy fields and the size helper)
+  the failure is earlier and explicit: `VK_ERROR_OUT_OF_HOST_MEMORY` at the first BC upload
+  (`runs/unidades-bc-refutadas-20-11-1429/`).
 - **Refuted:** the staging buffer as the copy blocker — with `BB_COPY_FORCE_STAGING=0` the app dies
   at the same second (`runs/copias-sem-staging-tambem-cai-20-11-1244/`), and the same happens with
   only same-format copies active (`runs/modo-2-tambem-cai-20-11-1248/`).
@@ -73,9 +75,20 @@ copies.
   every copy correctly (D32 and R32 directions) and the device is lost exactly as with the transfers.
 - **Refuted:** the wait list. The failing submit has an empty wait list and no bridge semaphore
   (`runs/sem-espera-no-submit-culpado-20-11-1408/`), so no dependency can be blamed.
-- **Next:** log the source/destination `vk::ImageUsageFlags` at the copy site. A missing
-  `TRANSFER_SRC`/`TRANSFER_DST` or `COLOR_ATTACHMENT`/`DEPTH_STENCIL_ATTACHMENT` would fault both
-  mechanisms at once, and Dozen cannot report why (`VK_EXT_device_fault` is absent).
+- **Refuted:** image lifetime. Waiting for the GPU right after every copy still ends the load, and the
+  texture cache already defers `FreeImage` to a tick after the copy (`runs/sync-nao-salva-o-copy-20-11-1418/`).
+- **Refuted:** the image usage flags. All copies use 39 (transfer src/dst + sampled + depth attachment)
+  or 31 (the same plus storage and colour attachment), which is complete.
+- **Refuted:** the BC upload units. Expressing the row length in texel blocks (the Vulkan rule) makes
+  Dozen fail the first BC upload with `VK_ERROR_OUT_OF_HOST_MEMORY`; the ICD wants pixels
+  (`runs/unidades-bc-refutadas-20-11-1429/`).
+- **The crash history says the copy is not the hanging command.** The failing submit (`tick 21812`,
+  `#25797`) ends in draws and guest compute dispatches (`aec539f0` 1×360, `7095d6c2` 1×1); the copies
+  are in the middle of the same submit and the GPU consumes them. What changes with copies on is the
+  *state* the later draws/dispatches see.
+- **Next:** dump `0x7095d6c2`, `0xaec539f0`, `0x6a6422a9` (`BB_DUMP_SHADERS=…`) in a copy-on run and
+  read the shader that ends the hung submit; a dispatch with a data-dependent loop is the shape that
+  turns a wrong buffer into a GPU hang instead of a wrong pixel.
 - Fallback: 2.3.
 
 ### 2.3 Null/absent descriptors
